@@ -139,122 +139,74 @@ function ReleaseHero({ release }: { release: GitHubRelease }) {
   )
 }
 
-function ReleaseTimelineItem({
-  release,
-  isLast,
-  defaultOpen,
-}: {
-  release: GitHubRelease
-  isLast: boolean
-  defaultOpen: boolean
-}) {
-  const [open, setOpen] = useState(defaultOpen)
+function ReleaseSidebarItem({ release }: { release: GitHubRelease }) {
+  const [open, setOpen] = useState(false)
   const jar = getJarAsset(release)
   const preview = getReleasePreview(release.body)
 
   return (
-    <div className={`release-timeline-item ${open ? 'release-timeline-item--open' : ''}`}>
-      <div className="release-timeline-rail" aria-hidden>
-        <span className="release-timeline-dot" />
-        {!isLast && <span className="release-timeline-line" />}
+    <article className={`release-sidebar-item ${open ? 'release-sidebar-item--open' : ''}`}>
+      <button
+        type="button"
+        className="release-sidebar-head"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+      >
+        <div className="release-sidebar-title">
+          <div className="release-sidebar-top">
+            <span className="release-tag">{release.tag_name}</span>
+            {release.prerelease && <span className="release-badge release-badge--pre">Pre</span>}
+            <span className="release-sidebar-date">{formatReleaseDate(release.published_at)}</span>
+          </div>
+          <p className="release-sidebar-preview">{preview}</p>
+          {jar && <span className="release-sidebar-size">{formatFileSize(jar.size)}</span>}
+        </div>
+        <motion.span
+          className="release-sidebar-chevron"
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.25 }}
+          aria-hidden
+        >
+          ⌄
+        </motion.span>
+      </button>
+
+      <div className="release-sidebar-actions">
+        {jar && (
+          <a href={jar.browser_download_url} className="release-sidebar-download" download>
+            ↓ Jar
+          </a>
+        )}
+        <a
+          href={release.html_url}
+          className="release-sidebar-link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub ↗
+        </a>
       </div>
 
-      <article className="release-timeline-card glass-card">
-        <button
-          type="button"
-          className="release-timeline-head"
-          onClick={() => setOpen((value) => !value)}
-          aria-expanded={open}
-        >
-          <div className="release-timeline-title">
-            <div className="release-card-badges">
-              <span className="release-tag">{release.tag_name}</span>
-              {release.prerelease && <span className="release-badge release-badge--pre">Pre-release</span>}
-            </div>
-            <h3>{release.name || release.tag_name}</h3>
-            <p className="release-timeline-preview">{preview}</p>
-            <div className="release-timeline-meta">
-              <span>{formatReleaseDate(release.published_at)}</span>
-              {jar && (
-                <>
-                  <span>·</span>
-                  <span>{formatFileSize(jar.size)}</span>
-                </>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            className="release-sidebar-body"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="release-sidebar-inner">
+              {release.body ? (
+                <MarkdownContent content={release.body} />
+              ) : (
+                <p className="release-empty-notes">No release notes provided on GitHub.</p>
               )}
             </div>
-          </div>
-
-          <div className="release-timeline-actions">
-            {jar && (
-              <a
-                href={jar.browser_download_url}
-                className="release-download-btn"
-                download
-                onClick={(e) => e.stopPropagation()}
-              >
-                ↓ {jar.name}
-              </a>
-            )}
-            <motion.span
-              className="release-toggle"
-              animate={{ rotate: open ? 180 : 0 }}
-              transition={{ duration: 0.25 }}
-              aria-hidden
-            >
-              ⌄
-            </motion.span>
-          </div>
-        </button>
-
-        <AnimatePresence initial={false}>
-          {open && (
-            <motion.div
-              className="release-timeline-body"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <div className="release-timeline-inner">
-                {release.body ? (
-                  <MarkdownContent content={release.body} />
-                ) : (
-                  <p className="release-empty-notes">No release notes provided on GitHub.</p>
-                )}
-
-                <div className="release-card-footer">
-                  <div className="release-assets">
-                    {release.assets.length > 0 ? (
-                      release.assets.map((asset) => (
-                        <a
-                          key={asset.name}
-                          href={asset.browser_download_url}
-                          className="release-asset"
-                          download
-                        >
-                          <span>{asset.name}</span>
-                          <span>{formatFileSize(asset.size)}</span>
-                        </a>
-                      ))
-                    ) : (
-                      <span className="release-empty-notes">No downloadable assets attached.</span>
-                    )}
-                  </div>
-                  <a
-                    href={release.html_url}
-                    className="release-github-link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View on GitHub ↗
-                  </a>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </article>
-    </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </article>
   )
 }
 
@@ -344,27 +296,32 @@ export function Releases() {
 
         {!loading && !error && latest && (
           <Reveal delay={0.08}>
-            <ReleaseHero release={latest} />
-          </Reveal>
-        )}
+            <div className={`releases-grid ${olderReleases.length === 0 ? 'releases-grid--solo' : ''}`}>
+              <div className="releases-main">
+                <ReleaseHero release={latest} />
+              </div>
 
-        {!loading && !error && olderReleases.length > 0 && (
-          <Reveal delay={0.12}>
-            <div className="releases-timeline-panel glass-card">
-              <div className="releases-timeline-head">
-                <span className="releases-timeline-label">Previous versions</span>
-                <span className="releases-timeline-count">{olderReleases.length} older</span>
-              </div>
-              <div className="releases-timeline">
-                {olderReleases.map((release, index) => (
-                  <ReleaseTimelineItem
-                    key={release.id}
-                    release={release}
-                    isLast={index === olderReleases.length - 1}
-                    defaultOpen={false}
-                  />
-                ))}
-              </div>
+              {olderReleases.length > 0 && (
+                <aside className="releases-sidebar glass-card">
+                  <div className="releases-sidebar-head">
+                    <span className="releases-sidebar-label">Older versions</span>
+                    <span className="releases-sidebar-count">{olderReleases.length}</span>
+                  </div>
+                  <div className="releases-sidebar-list">
+                    {olderReleases.map((release) => (
+                      <ReleaseSidebarItem key={release.id} release={release} />
+                    ))}
+                  </div>
+                  <a
+                    href={`${MOD.repoUrl}/releases`}
+                    className="releases-sidebar-all"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    All releases on GitHub ↗
+                  </a>
+                </aside>
+              )}
             </div>
           </Reveal>
         )}

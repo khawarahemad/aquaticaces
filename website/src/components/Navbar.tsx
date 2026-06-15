@@ -59,10 +59,12 @@ export function Navbar() {
     }
   }, [menuOpen])
 
+  const showProgress = scrollProgress > 0.005 && !menuOpen
+
   return (
     <>
       <motion.header
-        className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}
+        className={`navbar ${scrolled ? 'navbar--scrolled' : ''} ${menuOpen ? 'navbar--menu-open' : ''}`}
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
@@ -104,8 +106,9 @@ export function Navbar() {
                 <span>GitHub</span>
               </a>
               <a href="#download" className="navbar-cta">
-                <span>Download</span>
+                <span className="navbar-cta-text">Download</span>
                 <span className="navbar-cta-arrow" aria-hidden>↓</span>
+                <span className="navbar-cta-icon" aria-hidden>↓</span>
               </a>
               <button
                 type="button"
@@ -119,7 +122,12 @@ export function Navbar() {
             </div>
           </nav>
 
-          <div className="navbar-progress" style={{ transform: `scaleX(${scrollProgress})` }} />
+          <div className="navbar-progress-track" aria-hidden>
+            <div
+              className="navbar-progress"
+              style={{ width: showProgress ? `${scrollProgress * 100}%` : '0%' }}
+            />
+          </div>
         </div>
       </motion.header>
 
