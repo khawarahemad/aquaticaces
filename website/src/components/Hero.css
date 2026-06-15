@@ -111,6 +111,19 @@
   margin-bottom: 1.5rem;
 }
 
+.hero-brand {
+  display: block;
+  font-size: 0.42em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+}
+
+.hero-title-line {
+  display: block;
+}
+
 .gradient-text {
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 50%, var(--purple) 100%);
   -webkit-background-clip: text;

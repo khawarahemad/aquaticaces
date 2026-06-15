@@ -1,0 +1,18 @@
+{
+  "name": "Aquatic Aces",
+  "short_name": "Aquatic Aces",
+  "description": "Free Minecraft 1.21 Fabric client with 60+ modules, NanoVG ClickGUI, and HUD editor.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#06070b",
+  "theme_color": "#0a0b0f",
+  "lang": "en-US",
+  "icons": [
+    {
+      "src": "logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

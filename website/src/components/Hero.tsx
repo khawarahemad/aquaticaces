@@ -34,14 +34,14 @@ export function Hero() {
           </div>
 
           <h1 className="hero-title">
-            The most <span className="gradient-text">advanced</span>
-            <br />
-            Fabric client for 1.21
+            <span className="hero-brand">Aquatic Aces</span>
+            <span className="hero-title-line">The most <span className="gradient-text">advanced</span> Fabric client for 1.21</span>
           </h1>
 
           <p className="hero-tagline">
-            NanoVG-powered UI, 60+ modules, drag-and-drop HUD editor, schematic
-            preview, and a full command system — engineered for performance and polish.
+            Free open-source Minecraft {MOD.minecraft} Fabric client — NanoVG ClickGUI, 60+ modules
+            including KillAura, ESP, and Scaffold, plus drag-and-drop HUD editor, schematic preview,
+            and a full command system.
           </p>
 
           <div className="hero-actions">

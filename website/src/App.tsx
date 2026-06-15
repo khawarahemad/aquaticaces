@@ -8,10 +8,13 @@ import { InstallGuide } from './components/InstallGuide'
 import { Commands } from './components/Commands'
 import { Faq } from './components/Faq'
 import { Footer } from './components/Footer'
+import { StructuredData } from './components/StructuredData'
+import { SeoContent } from './components/SeoContent'
 
 export default function App() {
   return (
     <>
+      <StructuredData />
       <Navbar />
       <main>
         <Hero />
@@ -28,6 +31,7 @@ export default function App() {
         <Faq />
       </main>
       <Footer />
+      <SeoContent />
     </>
   )
 }
