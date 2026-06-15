@@ -88,10 +88,17 @@
 
 .download-file-meta {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   font-size: 0.8rem;
   color: var(--text-dim);
   font-weight: 600;
+}
+
+.download-fallback-note {
+  margin-top: 0.65rem;
+  font-size: 0.78rem;
+  color: #ffaa88;
 }
 
 .download-spotlight-actions {

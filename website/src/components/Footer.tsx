@@ -26,6 +26,7 @@ export function Footer() {
             <h4>Site</h4>
             <a href="#features">Features</a>
             <a href="#download">Download</a>
+            <a href="#releases">Releases</a>
             <a href="#install">Install</a>
             <a href="#faq">FAQ</a>
           </div>

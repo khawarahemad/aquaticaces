@@ -3,6 +3,7 @@ import { Hero } from './components/Hero'
 import { Features } from './components/Features'
 import { Modules } from './components/Modules'
 import { Download } from './components/Download'
+import { Releases } from './components/Releases'
 import { InstallGuide } from './components/InstallGuide'
 import { Commands } from './components/Commands'
 import { Faq } from './components/Faq'
@@ -20,6 +21,8 @@ export default function App() {
         <Modules />
         <div className="glow-line" />
         <Download />
+        <div className="glow-line" />
+        <Releases />
         <InstallGuide />
         <Commands />
         <Faq />

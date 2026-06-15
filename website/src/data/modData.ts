@@ -283,6 +283,7 @@ export const NAV_LINKS = [
   { label: 'Features', href: '#features' },
   { label: 'Modules', href: '#modules' },
   { label: 'Download', href: '#download' },
+  { label: 'Releases', href: '#releases' },
   { label: 'Install', href: '#install' },
   { label: 'Commands', href: '#commands' },
   { label: 'FAQ', href: '#faq' },

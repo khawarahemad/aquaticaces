@@ -1,5 +1,12 @@
 import { motion } from 'framer-motion'
 import { DOWNLOADS, MOD } from '../data/modData'
+import { useGitHubReleases } from '../hooks/useGitHubReleases'
+import {
+  formatFileSize,
+  formatReleaseDate,
+  getJarAsset,
+  getReleaseVersion,
+} from '../lib/githubReleases'
 import { assetUrl } from '../lib/assetUrl'
 import { Logo } from './ui/Logo'
 import { Reveal } from './ui/Reveal'
@@ -8,9 +15,15 @@ import './Download.css'
 
 const DEPS = DOWNLOADS.filter((d) => !d.primary && d.name !== 'Source Code')
 const SOURCE = DOWNLOADS.find((d) => d.name === 'Source Code')!
+const FALLBACK = DOWNLOADS.find((d) => d.primary)!
 
 export function Download() {
-  const primary = DOWNLOADS.find((d) => d.primary)!
+  const { latest, loading, error } = useGitHubReleases()
+  const jar = latest ? getJarAsset(latest) : null
+  const downloadUrl = jar?.browser_download_url ?? assetUrl(FALLBACK!.file)
+  const version = latest ? getReleaseVersion(latest) : MOD.version
+  const fileSize = jar ? formatFileSize(jar.size) : FALLBACK!.size
+  const publishedAt = latest ? formatReleaseDate(latest.published_at) : null
 
   return (
     <section id="download" className="page-section download-section">
@@ -32,22 +45,48 @@ export function Download() {
             <Logo size={72} />
             <div className="download-spotlight-meta">
               <div className="download-pills">
-                <span className="download-pill download-pill--live">v{MOD.version}</span>
+                <span className="download-pill download-pill--live">v{version}</span>
                 <span className="download-pill">MC {MOD.minecraft}</span>
                 <span className="download-pill">Fabric</span>
+                {latest?.prerelease && <span className="download-pill">Pre-release</span>}
               </div>
               <h3>Aquatic Aces Client</h3>
               <p>Drop the jar into <code>.minecraft/mods/</code> alongside Fabric API.</p>
               <div className="download-file-meta">
-                <span>{primary.size}</span>
+                <span>{fileSize}</span>
                 <span>·</span>
                 <span>MIT License</span>
+                {publishedAt && (
+                  <>
+                    <span>·</span>
+                    <span>{publishedAt}</span>
+                  </>
+                )}
               </div>
+              {error && (
+                <p className="download-fallback-note">
+                  GitHub releases unavailable — using bundled fallback jar.
+                </p>
+              )}
             </div>
           </div>
           <div className="download-spotlight-actions">
-            <a href={assetUrl(primary.file)} className="btn btn-primary" download>
-              Download JAR
+            <a
+              href={downloadUrl}
+              className="btn btn-primary"
+              download={jar ? jar.name : undefined}
+              target={jar ? '_blank' : undefined}
+              rel={jar ? 'noopener noreferrer' : undefined}
+            >
+              {loading ? 'Loading...' : `Download v${version}`}
+            </a>
+            <a
+              href={latest?.html_url ?? `${MOD.repoUrl}/releases/latest`}
+              className="btn btn-secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Latest Release ↗
             </a>
             <a
               href={MOD.repoUrl}
