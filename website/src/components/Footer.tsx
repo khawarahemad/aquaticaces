@@ -34,6 +34,7 @@ export function Footer() {
             <h4>Dependencies</h4>
             <a href="https://fabricmc.net/use/installer/" target="_blank" rel="noopener noreferrer">Fabric</a>
             <a href="https://modrinth.com/mod/fabric-api" target="_blank" rel="noopener noreferrer">Fabric API</a>
+            <a href="https://modrinth.com/mod/fabric-language-kotlin" target="_blank" rel="noopener noreferrer">Fabric Kotlin</a>
             <a href="https://adoptium.net/temurin/releases/?version=21" target="_blank" rel="noopener noreferrer">Java 21</a>
           </div>
           <div className="footer-col">

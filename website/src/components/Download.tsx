@@ -51,7 +51,7 @@ export function Download() {
                 {latest?.prerelease && <span className="download-pill">Pre-release</span>}
               </div>
               <h3>Aquatic Aces Client</h3>
-              <p>Drop the jar into <code>.minecraft/mods/</code> alongside Fabric API.</p>
+              <p>Drop the jar into <code>.minecraft/mods/</code> alongside Fabric API and Fabric Language Kotlin.</p>
               <div className="download-file-meta">
                 <span>{fileSize}</span>
                 <span>·</span>
@@ -160,6 +160,7 @@ export function Download() {
               ['Java', 'JDK 21'],
               ['Loader', `${MOD.loader}+`],
               ['Fabric API', MOD.fabricApi],
+              ['Fabric Kotlin', MOD.fabricKotlin],
               ['RAM', '6 GB rec.'],
             ].map(([k, v]) => (
               <div key={k} className="req-chip">

@@ -4,6 +4,7 @@ export const MOD = {
   minecraft: '1.21',
   loader: '0.15.11',
   fabricApi: '0.100.3+1.21',
+  fabricKotlin: '1.11.0+kotlin.2.0.0',
   license: 'MIT',
   defaultKeybind: 'Right Shift',
   commandPrefix: '.',
@@ -49,6 +50,16 @@ export const DOWNLOADS = [
     size: 'External',
     primary: false,
     icon: '📦',
+    external: true,
+  },
+  {
+    name: 'Fabric Language Kotlin',
+    version: MOD.fabricKotlin,
+    description: 'Required runtime for Kotlin-based Fabric mods like Aquatic Aces.',
+    file: 'https://modrinth.com/mod/fabric-language-kotlin/version/1.11.0+kotlin.2.0.0',
+    size: 'External',
+    primary: false,
+    icon: '🟣',
     external: true,
   },
   {
@@ -242,11 +253,16 @@ export const INSTALL_STEPS = [
   },
   {
     step: 4,
-    title: 'Add Aquatic Aces',
-    body: 'Download aquaticaces-1.0.0.jar from this page and drop it into .minecraft/mods alongside Fabric API.',
+    title: 'Add Fabric Language Kotlin',
+    body: 'Download Fabric Language Kotlin for 1.21 — Aquatic Aces is written in Kotlin and needs this jar in your mods folder.',
   },
   {
     step: 5,
+    title: 'Add Aquatic Aces',
+    body: 'Download aquaticaces-1.0.0.jar from this page and drop it into .minecraft/mods alongside Fabric API and Fabric Language Kotlin.',
+  },
+  {
+    step: 6,
     title: 'Launch & Play',
     body: 'Select your Fabric 1.21 profile, launch Minecraft, and press Right Shift to open the ClickGUI.',
   },
@@ -255,7 +271,7 @@ export const INSTALL_STEPS = [
 export const FAQ = [
   {
     q: 'What Minecraft version does Aquatic Aces support?',
-    a: 'Aquatic Aces is built for Minecraft 1.21 with Fabric Loader 0.15.11+ and Fabric API.',
+    a: 'Aquatic Aces is built for Minecraft 1.21 with Fabric Loader 0.15.11+, Fabric API, and Fabric Language Kotlin.',
     tag: 'Compatibility',
     accent: '#00c6ff',
   },

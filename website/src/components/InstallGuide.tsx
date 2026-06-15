@@ -4,7 +4,7 @@ import { Reveal } from './ui/Reveal'
 import { SectionHeader } from './ui/SectionHeader'
 import './InstallGuide.css'
 
-const STEP_ICONS = ['☕', '🧵', '📦', '⚡', '🎮']
+const STEP_ICONS = ['☕', '🧵', '📦', '🟣', '⚡', '🎮']
 
 export function InstallGuide() {
   return (
@@ -12,7 +12,7 @@ export function InstallGuide() {
       <Reveal>
         <SectionHeader
           label="Installation"
-          title="Five steps to launch"
+          title="Six steps to launch"
           subtitle={`Press ${MOD.defaultKeybind} in-game to open the ClickGUI. Configs save to .minecraft/aquaticaces/.`}
         />
       </Reveal>
@@ -66,6 +66,14 @@ export function InstallGuide() {
               <div className="finder-file-info">
                 <strong>fabric-api-{MOD.fabricApi}.jar</strong>
                 <span>Required dependency</span>
+              </div>
+              <span className="finder-tag">Required</span>
+            </div>
+            <div className="finder-file">
+              <span className="finder-file-icon">🟣</span>
+              <div className="finder-file-info">
+                <strong>fabric-language-kotlin-{MOD.fabricKotlin}.jar</strong>
+                <span>Kotlin runtime for Fabric</span>
               </div>
               <span className="finder-tag">Required</span>
             </div>
