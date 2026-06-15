@@ -368,6 +368,23 @@ cd website && npm install && npm run dev
 
 Build for deployment: `npm run build` → deploy the `website/dist/` folder.
 
+## Publish to GitHub
+
+The project is already committed locally. To create the remote repo and push:
+
+```bash
+gh auth login
+gh repo create aquaticaces --public --source=. --remote=origin --push \
+  --description "Aquatic Aces — Fabric client for Minecraft 1.21"
+```
+
+If the repo name is taken, pick another name and update the remote:
+
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/aquaticaces.git
+git push -u origin main
+```
+
 ---
 
 ## Disclaimer
