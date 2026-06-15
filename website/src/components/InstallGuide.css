@@ -1,163 +1,232 @@
-.install-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 2rem;
+.install-section {
+  position: relative;
 }
 
-.timeline-step {
+.install-track {
   display: flex;
-  gap: 1.5rem;
-  padding: 1.5rem 1.75rem;
-  align-items: flex-start;
-}
-
-.timeline-marker {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  flex-shrink: 0;
+  justify-content: space-between;
+  padding: 1.25rem 2rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
 }
 
-.timeline-num {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+.install-track-step {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.install-track-step:last-child {
+  flex: 0;
+}
+
+.install-track-node {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 1rem;
-  color: #fff;
-  box-shadow: 0 4px 20px rgba(0, 198, 255, 0.35);
-}
-
-.timeline-line {
-  width: 2px;
-  flex: 1;
-  min-height: 24px;
-  margin-top: 0.5rem;
-  background: linear-gradient(180deg, var(--accent), transparent);
-  opacity: 0.4;
-}
-
-.timeline-body h3 {
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin-bottom: 0.4rem;
-}
-
-.timeline-body p {
   font-size: 0.9rem;
-  color: var(--text-muted);
-  line-height: 1.65;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 4px 18px rgba(0, 198, 255, 0.35);
 }
 
-.mods-folder {
-  padding: 1.75rem 2rem;
+.install-track-line {
+  flex: 1;
+  height: 2px;
+  margin: 0 0.5rem;
+  background: linear-gradient(90deg, var(--accent), rgba(0, 198, 255, 0.15));
+  min-width: 24px;
 }
 
-.mods-folder-header {
+.install-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.install-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem 1.35rem;
+  align-items: flex-start;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.install-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 10px 32px var(--glow);
+}
+
+.install-card-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  justify-content: center;
+  font-size: 1.25rem;
+  background: var(--accent-soft);
+  border: 1px solid rgba(0, 198, 255, 0.2);
 }
 
-.folder-icon {
-  font-size: 2rem;
-}
-
-.mods-folder-header h3 {
-  font-size: 1rem;
+.install-card-step {
+  display: block;
+  font-size: 0.68rem;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
   margin-bottom: 0.25rem;
 }
 
-.mods-folder-header code {
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  font-size: 0.85rem;
-  color: var(--accent);
+.install-card-body h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
 }
 
-.folder-files {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+.install-card-body p {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  line-height: 1.6;
 }
 
-.folder-file {
+.finder-window {
+  padding: 0;
+  overflow: hidden;
+}
+
+.finder-titlebar {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.85rem 1.1rem;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font-size: 0.88rem;
-  font-weight: 500;
+  gap: 0.45rem;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid var(--border);
 }
 
-.folder-file--main {
+.finder-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.finder-dot--red { background: #ff5f57; }
+.finder-dot--yellow { background: #febc2e; }
+.finder-dot--green { background: #28c840; }
+
+.finder-title {
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.finder-path {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(42, 46, 61, 0.5);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.finder-path-active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.finder-files {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.finder-file {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border);
+}
+
+.finder-file--main {
   border-color: rgba(0, 198, 255, 0.35);
   background: rgba(0, 198, 255, 0.06);
 }
 
-.file-icon {
-  font-size: 1.1rem;
+.finder-file-icon {
+  font-size: 1.35rem;
 }
 
-.file-tag {
-  margin-left: auto;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 0.2rem 0.55rem;
-  border-radius: 100px;
-  background: rgba(255, 255, 255, 0.06);
+.finder-file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.finder-file-info strong {
+  display: block;
+  font-size: 0.88rem;
+  margin-bottom: 0.15rem;
+  word-break: break-all;
+}
+
+.finder-file-info span {
+  font-size: 0.78rem;
   color: var(--text-dim);
 }
 
-.file-tag--accent {
+.finder-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.22rem 0.55rem;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.finder-tag--accent {
   background: var(--accent-soft);
   color: var(--accent);
 }
 
-@media (max-width: 768px) {
-  .timeline-step {
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1.25rem;
+@media (max-width: 900px) {
+  .install-cards {
+    grid-template-columns: 1fr;
   }
 
-  .timeline-marker {
-    flex-direction: row;
-    width: 100%;
-    gap: 0.75rem;
+  .install-track {
+    padding: 1rem 1.25rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .install-track {
+    display: none;
   }
 
-  .timeline-line {
-    width: auto;
-    flex: 1;
-    height: 2px;
-    min-height: 0;
-    margin-top: 0;
-    background: linear-gradient(90deg, var(--accent), transparent);
-  }
-
-  .mods-folder {
-    padding: 1.25rem;
-  }
-
-  .folder-file {
+  .finder-file {
     flex-wrap: wrap;
-    gap: 0.5rem;
   }
 
-  .file-tag {
-    margin-left: 0;
+  .finder-tag {
     width: 100%;
     text-align: center;
   }

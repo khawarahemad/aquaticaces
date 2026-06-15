@@ -8,6 +8,7 @@ export const MOD = {
   defaultKeybind: 'Right Shift',
   commandPrefix: '.',
   defaultProfile: 'Ghost',
+  repoUrl: 'https://github.com/khawarahemad/aquaticaces',
 } as const
 
 export const DOWNLOADS = [
@@ -19,6 +20,16 @@ export const DOWNLOADS = [
     size: '~500 KB',
     primary: true,
     icon: '⚡',
+  },
+  {
+    name: 'Source Code',
+    version: 'GitHub',
+    description: 'Full mod source, website, and build instructions on GitHub.',
+    file: 'https://github.com/khawarahemad/aquaticaces',
+    size: 'Open Source',
+    primary: false,
+    icon: '💻',
+    external: true,
   },
   {
     name: 'Fabric Installer',
@@ -58,48 +69,80 @@ export const FEATURES = [
     description:
       'Scrollable category panels, live search, theme editor, HSV color picker, and keybind labels on every module.',
     icon: '🎨',
+    accent: '#00c6ff',
+    tag: 'UI',
+    layout: 'hero',
+    highlights: ['Live search', 'HSV picker', 'Theme editor'],
   },
   {
     title: 'HUD Suite',
     description:
       'Target, Stats, ArrayList, Notifications, Performance, and Coordinates — toggle individually or drag positions.',
     icon: '📊',
+    accent: '#a97bff',
+    tag: 'Overlay',
+    layout: 'tall',
+    highlights: ['6 overlays', 'Drag positions'],
   },
   {
     title: '60+ Modules',
     description:
       'Combat, Movement, Render, World, Exploit, Player, Utility, and Ghost — each with configurable settings.',
     icon: '🧩',
+    accent: '#00ff88',
+    tag: 'Core',
+    layout: 'tall',
+    highlights: ['8 categories', 'Keybinds'],
   },
   {
     title: 'Config Profiles',
     description:
       'Save and load full profiles or per-category snapshots as JSON. Hot-swap between PvP, Ghost, and custom setups.',
     icon: '💾',
+    accent: '#66aaff',
+    tag: 'Profiles',
+    layout: 'normal',
+    highlights: ['Per-category', 'JSON'],
   },
   {
     title: 'Schematic Tools',
     description:
       'Capture block regions, preview ghost wireframes, and mirror placements with Symmetry Brush.',
     icon: '📐',
+    accent: '#ffaa00',
+    tag: 'World',
+    layout: 'normal',
+    highlights: ['Ghost preview', 'Symmetry'],
   },
   {
     title: 'Social Layer',
     description:
       'Friends list, waypoints, alt account manager, and a custom multiplayer screen built in.',
     icon: '👥',
+    accent: '#ff88cc',
+    tag: 'Social',
+    layout: 'normal',
+    highlights: ['Friends', 'Alts', 'Waypoints'],
   },
   {
     title: 'Event Bus',
     description:
       'Priority-aware handlers for ticks, packets, rendering, input, and chat — fast and extensible.',
     icon: '⚡',
+    accent: '#0072ff',
+    tag: 'Engine',
+    layout: 'wide',
+    highlights: ['Packet hooks', 'Priorities'],
   },
   {
     title: 'Dot Commands',
     description:
       'Full chat command system — toggle modules, bind keys, manage friends, alts, HUD, waypoints, and schematics.',
     icon: '⌨️',
+    accent: '#00c6ff',
+    tag: 'Chat',
+    layout: 'wide',
+    highlights: ['10 commands', 'Never sent to server'],
   },
 ] as const
 
@@ -213,18 +256,26 @@ export const FAQ = [
   {
     q: 'What Minecraft version does Aquatic Aces support?',
     a: 'Aquatic Aces is built for Minecraft 1.21 with Fabric Loader 0.15.11+ and Fabric API.',
+    tag: 'Compatibility',
+    accent: '#00c6ff',
   },
   {
     q: 'Where are configs saved?',
     a: 'All data lives in .minecraft/aquaticaces/ — profiles, HUD layout, friends, alts, waypoints, and schematics.',
+    tag: 'Storage',
+    accent: '#a97bff',
   },
   {
     q: 'How do I change the ClickGUI keybind?',
     a: 'Open ClickGUI, find the ClickGUI module under Render, and rebind it — or use .bind ClickGUI <key> in chat.',
+    tag: 'Controls',
+    accent: '#00ff88',
   },
   {
     q: 'Can I build from source?',
     a: 'Yes. Clone the repo, run ./gradlew build, and grab the jar from build/libs/. Requires Java 21 and Gradle.',
+    tag: 'Developers',
+    accent: '#ffaa00',
   },
 ] as const
 

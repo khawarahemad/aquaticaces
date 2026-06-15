@@ -1,4 +1,5 @@
 import { MOD } from '../data/modData'
+import { Logo } from './ui/Logo'
 import './Footer.css'
 
 export function Footer() {
@@ -16,8 +17,7 @@ export function Footer() {
       <div className="footer-inner">
         <div className="footer-brand">
           <span className="footer-logo">
-            <span className="logo-mark"><span className="logo-mark-inner">⚡</span></span>
-            Aquatic Aces
+            <Logo size={36} showWordmark />
           </span>
           <p>Modular Fabric client · Kotlin · NanoVG · MIT License</p>
         </div>
@@ -36,8 +36,9 @@ export function Footer() {
             <a href="https://adoptium.net/temurin/releases/?version=21" target="_blank" rel="noopener noreferrer">Java 21</a>
           </div>
           <div className="footer-col">
-            <h4>Design</h4>
-            <a href="https://www.figma.com/design/X9yZix9KMGPpcUh4HJoean" target="_blank" rel="noopener noreferrer">Figma File</a>
+            <h4>Project</h4>
+            <a href={MOD.repoUrl} target="_blank" rel="noopener noreferrer">Source Repo</a>
+            <a href="https://www.figma.com/design/X9yZix9KMGPpcUh4HJoean" target="_blank" rel="noopener noreferrer">Figma Design</a>
             <span className="footer-meta">v{MOD.version}</span>
           </div>
         </div>

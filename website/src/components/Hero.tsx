@@ -51,6 +51,14 @@ export function Hero() {
             <a href="#install" className="btn btn-secondary">
               Setup Guide
             </a>
+            <a
+              href={MOD.repoUrl}
+              className="btn btn-secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Source Repo ↗
+            </a>
           </div>
 
           <div className="hero-stats">
@@ -87,6 +95,10 @@ export function Hero() {
               <span className="mock-dot mock-dot--yellow" />
               <span className="mock-dot mock-dot--green" />
               <span className="mock-search">Search modules...</span>
+              <div className="mock-keybind" aria-label="Press Right Shift to open ClickGUI">
+                <kbd>⇧</kbd>
+                <span>Right Shift</span>
+              </div>
             </div>
             <div className="mock-panels">
               {PANELS.map((panel, i) => (
@@ -118,10 +130,6 @@ export function Hero() {
                 <span>142 FPS</span>
               </div>
             </div>
-          </div>
-          <div className="preview-badge" aria-label="Press Right Shift to open ClickGUI">
-            <span>Right Shift</span>
-            <small>to open</small>
           </div>
         </motion.div>
       </div>

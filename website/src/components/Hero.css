@@ -167,8 +167,6 @@
 .hero-preview {
   position: relative;
   perspective: 1200px;
-  padding-top: 1.5rem;
-  padding-right: 1rem;
 }
 
 .preview-glow {
@@ -218,6 +216,42 @@
   border-radius: 6px;
   border: 1px solid var(--border);
   flex: 1;
+  min-width: 0;
+}
+
+.mock-keybind {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  padding: 0.3rem 0.55rem;
+  border-radius: 8px;
+  background: rgba(0, 198, 255, 0.08);
+  border: 1px solid rgba(0, 198, 255, 0.22);
+}
+
+.mock-keybind kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 0.35rem;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(0, 198, 255, 0.35);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.mock-keybind span {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .mock-panels {
@@ -304,36 +338,6 @@
   border-radius: 2px;
 }
 
-.preview-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 2;
-  padding: 0.55rem 0.9rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border-glow);
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 8px 24px rgba(0, 198, 255, 0.25);
-  transform: translate(25%, -25%);
-  white-space: nowrap;
-}
-
-.preview-badge span {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: 0.02em;
-}
-
-.preview-badge small {
-  display: block;
-  font-size: 0.62rem;
-  color: var(--text-dim);
-  margin-top: 0.1rem;
-}
-
 @media (max-width: 1024px) {
   .hero-layout {
     grid-template-columns: 1fr;
@@ -358,14 +362,8 @@
   .hero-preview {
     max-width: 520px;
     margin: 0 auto;
-    padding-top: 2rem;
+    padding-top: 0;
     padding-right: 0;
-  }
-
-  .preview-badge {
-    top: 0.25rem;
-    right: 0.5rem;
-    transform: none;
   }
 
   .clickgui-mock {
@@ -419,15 +417,18 @@
     flex-direction: column;
   }
 
-  .hero-badges {
-    justify-content: center;
+  .mock-toolbar {
+    flex-wrap: wrap;
   }
 
-  .preview-badge {
-    position: static;
-    margin: 1rem auto 0;
-    width: fit-content;
-    transform: none;
+  .mock-keybind {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.25rem;
+  }
+
+  .hero-badges {
+    justify-content: center;
   }
 
   .hero-preview {

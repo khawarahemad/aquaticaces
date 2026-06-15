@@ -368,6 +368,8 @@ cd website && npm install && npm run dev
 
 Build for deployment: `npm run build` → deploy the `website/dist/` folder.
 
+**Live site:** [https://khawarahemad.github.io/aquaticaces/](https://khawarahemad.github.io/aquaticaces/) — auto-deployed from `main` via GitHub Actions.
+
 ## Publish to GitHub
 
 The project is already committed locally. To create the remote repo and push:

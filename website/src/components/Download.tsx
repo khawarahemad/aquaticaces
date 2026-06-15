@@ -1,8 +1,13 @@
 import { motion } from 'framer-motion'
 import { DOWNLOADS, MOD } from '../data/modData'
+import { assetUrl } from '../lib/assetUrl'
+import { Logo } from './ui/Logo'
 import { Reveal } from './ui/Reveal'
 import { SectionHeader } from './ui/SectionHeader'
 import './Download.css'
+
+const DEPS = DOWNLOADS.filter((d) => !d.primary && d.name !== 'Source Code')
+const SOURCE = DOWNLOADS.find((d) => d.name === 'Source Code')!
 
 export function Download() {
   const primary = DOWNLOADS.find((d) => d.primary)!
@@ -20,63 +25,107 @@ export function Download() {
         />
       </Reveal>
 
-      <Reveal delay={0.1}>
-        <motion.div
-          className="download-hero glass-card"
-          whileHover={{ scale: 1.01 }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="download-hero-glow" aria-hidden />
-          <div className="download-hero-content">
-            <span className="download-hero-icon">⚡</span>
-            <div>
-              <h3>Aquatic Aces v{MOD.version}</h3>
-              <p>The complete Fabric client — ready to drop in your mods folder.</p>
+      <Reveal delay={0.08}>
+        <motion.div className="download-spotlight glass-card" whileHover={{ y: -3 }}>
+          <div className="download-spotlight-mesh" aria-hidden />
+          <div className="download-spotlight-left">
+            <Logo size={72} />
+            <div className="download-spotlight-meta">
+              <div className="download-pills">
+                <span className="download-pill download-pill--live">v{MOD.version}</span>
+                <span className="download-pill">MC {MOD.minecraft}</span>
+                <span className="download-pill">Fabric</span>
+              </div>
+              <h3>Aquatic Aces Client</h3>
+              <p>Drop the jar into <code>.minecraft/mods/</code> alongside Fabric API.</p>
+              <div className="download-file-meta">
+                <span>{primary.size}</span>
+                <span>·</span>
+                <span>MIT License</span>
+              </div>
             </div>
           </div>
-          <a href={primary.file} className="btn btn-primary download-hero-btn" download>
-            Download JAR — {primary.size}
-          </a>
+          <div className="download-spotlight-actions">
+            <a href={assetUrl(primary.file)} className="btn btn-primary" download>
+              Download JAR
+            </a>
+            <a
+              href={MOD.repoUrl}
+              className="btn btn-secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Source Repo ↗
+            </a>
+          </div>
         </motion.div>
       </Reveal>
 
-      <div className="download-grid">
-        {DOWNLOADS.filter((d) => !d.primary).map((item, i) => (
-          <Reveal key={item.name} delay={0.15 + i * 0.08}>
-            <motion.a
-              href={item.file}
-              className="download-card glass-card"
-              {...('external' in item && item.external
-                ? { target: '_blank', rel: 'noopener noreferrer' }
-                : { download: true })}
-              whileHover={{ y: -4 }}
-            >
-              <span className="download-card-icon">{item.icon}</span>
-              <div className="download-card-body">
-                <h4>{item.name}</h4>
-                <span className="download-card-ver">v{item.version}</span>
-                <p>{item.description}</p>
+      <div className="download-panels">
+        <Reveal delay={0.12}>
+          <div className="download-panel glass-card">
+            <div className="download-panel-head">
+              <h4>Dependencies</h4>
+              <p>Required to run the mod</p>
+            </div>
+            <div className="download-panel-list">
+              {DEPS.map((item) => (
+                <a
+                  key={item.name}
+                  href={assetUrl(item.file)}
+                  className="download-list-item"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span className="download-list-icon">{item.icon}</span>
+                  <div className="download-list-body">
+                    <strong>{item.name}</strong>
+                    <span>{item.version}</span>
+                  </div>
+                  <span className="download-list-arrow">↗</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.16}>
+          <a
+            href={assetUrl(SOURCE.file)}
+            className="download-panel glass-card download-panel--source"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <div className="download-panel-head">
+              <h4>Source Repository</h4>
+              <p>Mod + website + build scripts</p>
+            </div>
+            <div className="download-source-body">
+              <span className="download-source-icon">{SOURCE.icon}</span>
+              <div>
+                <strong>github.com/khawarahemad/aquaticaces</strong>
+                <span>Clone, build with Gradle, or open issues.</span>
               </div>
-              <span className="download-card-arrow">↗</span>
-            </motion.a>
-          </Reveal>
-        ))}
+            </div>
+            <span className="download-source-cta">View on GitHub ↗</span>
+          </a>
+        </Reveal>
       </div>
 
       <Reveal delay={0.2}>
         <div className="requirements glass-card">
           <h3>System Requirements</h3>
-          <div className="req-grid">
+          <div className="req-row">
             {[
-              ['Minecraft', '1.21 Java Edition'],
-              ['Java', 'JDK 21 (required)'],
-              ['Fabric Loader', `${MOD.loader}+`],
+              ['Minecraft', '1.21'],
+              ['Java', 'JDK 21'],
+              ['Loader', `${MOD.loader}+`],
               ['Fabric API', MOD.fabricApi],
-              ['RAM', '4 GB min · 6+ GB recommended'],
+              ['RAM', '6 GB rec.'],
             ].map(([k, v]) => (
-              <div key={k} className="req-item">
-                <span className="req-key">{k}</span>
-                <span className="req-val">{v}</span>
+              <div key={k} className="req-chip">
+                <span className="req-chip-key">{k}</span>
+                <span className="req-chip-val">{v}</span>
               </div>
             ))}
           </div>

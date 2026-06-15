@@ -4,198 +4,305 @@
 
 .download-ambient {
   position: absolute;
-  top: 20%;
+  top: 10%;
   left: 50%;
   transform: translateX(-50%);
-  width: 800px;
-  height: 400px;
-  background: radial-gradient(ellipse, rgba(0, 198, 255, 0.12) 0%, transparent 70%);
+  width: 900px;
+  height: 420px;
+  background: radial-gradient(ellipse, rgba(0, 198, 255, 0.1) 0%, transparent 70%);
   pointer-events: none;
 }
 
-.download-hero {
+.download-spotlight {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  padding: 2rem 2.5rem;
-  margin-bottom: 1.5rem;
+  padding: 2rem 2.25rem;
+  margin-bottom: 1.25rem;
   position: relative;
   overflow: hidden;
+  flex-wrap: wrap;
 }
 
-.download-hero-glow {
+.download-spotlight-mesh {
   position: absolute;
-  top: -50%;
-  right: -10%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(0, 198, 255, 0.2), transparent 70%);
+  inset: 0;
+  background:
+    radial-gradient(circle at 85% 20%, rgba(0, 198, 255, 0.14), transparent 40%),
+    radial-gradient(circle at 10% 80%, rgba(0, 114, 255, 0.1), transparent 35%);
   pointer-events: none;
 }
 
-.download-hero-content {
+.download-spotlight-left {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1.5rem;
+  position: relative;
+  z-index: 1;
 }
 
-.download-hero-icon {
-  font-size: 2.5rem;
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--accent-soft);
-  border-radius: 16px;
-  border: 1px solid rgba(0, 198, 255, 0.25);
-}
-
-.download-hero-content h3 {
-  font-size: 1.35rem;
+.download-spotlight-meta h3 {
+  font-size: 1.5rem;
   font-weight: 800;
-  margin-bottom: 0.25rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.35rem;
 }
 
-.download-hero-content p {
-  font-size: 0.9rem;
+.download-spotlight-meta p {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.download-spotlight-meta code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.85em;
+  color: var(--accent);
+}
+
+.download-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+}
+
+.download-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.28rem 0.6rem;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
   color: var(--text-muted);
 }
 
-.download-hero-btn {
-  flex-shrink: 0;
-  white-space: nowrap;
+.download-pill--live {
+  color: var(--success);
+  border-color: rgba(0, 255, 136, 0.3);
+  background: rgba(0, 255, 136, 0.08);
 }
 
-.download-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.download-card {
+.download-file-meta {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1.35rem;
-  text-decoration: none;
-  color: inherit;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.download-card:hover {
-  border-color: var(--border-glow);
-  box-shadow: 0 12px 40px var(--glow);
-  color: inherit;
-}
-
-.download-card-icon {
-  font-size: 1.75rem;
-  line-height: 1;
-}
-
-.download-card-body {
-  flex: 1;
-}
-
-.download-card-body h4 {
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin-bottom: 0.15rem;
-}
-
-.download-card-ver {
-  font-size: 0.72rem;
-  color: var(--accent);
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
   font-weight: 600;
 }
 
-.download-card-body p {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  margin-top: 0.4rem;
-  line-height: 1.5;
+.download-spotlight-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 200px;
+  position: relative;
+  z-index: 1;
 }
 
-.download-card-arrow {
-  color: var(--text-dim);
-  font-size: 1rem;
-  transition: color 0.25s, transform 0.25s;
+.download-spotlight-actions .btn {
+  width: 100%;
+  justify-content: center;
 }
 
-.download-card:hover .download-card-arrow {
-  color: var(--accent);
-  transform: translate(2px, -2px);
-}
-
-.requirements {
-  padding: 1.75rem 2rem;
-}
-
-.requirements h3 {
-  font-size: 1rem;
-  font-weight: 700;
+.download-panels {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1rem;
   margin-bottom: 1.25rem;
 }
 
-.req-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.req-item {
+.download-panel {
+  padding: 1.35rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.85rem 1rem;
-  background: rgba(0, 0, 0, 0.25);
+  gap: 1rem;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+}
+
+.download-panel:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 12px 40px var(--glow);
+}
+
+.download-panel-head h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.download-panel-head p {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.download-panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.download-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.8rem 0.9rem;
   border-radius: 10px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.25s, background 0.25s;
+}
+
+.download-list-item:hover {
+  border-color: var(--border-glow);
+  background: rgba(0, 198, 255, 0.05);
+}
+
+.download-list-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.download-list-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.download-list-body strong {
+  font-size: 0.88rem;
+}
+
+.download-list-body span {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.download-list-arrow {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+.download-panel--source {
+  justify-content: space-between;
+}
+
+.download-source-body {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.download-source-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.download-source-body strong {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+  word-break: break-all;
+}
+
+.download-source-body span {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.download-source-cta {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.requirements {
+  padding: 1.5rem 1.75rem;
+}
+
+.requirements h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.req-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.req-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.7rem 1rem;
+  min-width: 110px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.28);
   border: 1px solid var(--border);
 }
 
-.req-key {
-  font-size: 0.72rem;
+.req-chip-key {
+  font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   color: var(--text-dim);
-  font-weight: 600;
+  font-weight: 700;
 }
 
-.req-val {
-  font-size: 0.9rem;
-  font-weight: 600;
+.req-chip-val {
+  font-size: 0.88rem;
+  font-weight: 700;
 }
 
 @media (max-width: 900px) {
-  .download-hero {
+  .download-spotlight {
     flex-direction: column;
+    align-items: stretch;
     text-align: center;
-    padding: 1.75rem 1.5rem;
   }
 
-  .download-hero-content {
+  .download-spotlight-left {
     flex-direction: column;
   }
 
-  .download-hero-btn {
+  .download-pills {
+    justify-content: center;
+  }
+
+  .download-file-meta {
+    justify-content: center;
+  }
+
+  .download-spotlight-actions {
     width: 100%;
     max-width: 320px;
+    margin: 0 auto;
   }
 
-  .download-grid {
+  .download-panels {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 480px) {
-  .requirements {
-    padding: 1.25rem 1rem;
+  .download-spotlight {
+    padding: 1.5rem 1.25rem;
   }
 
-  .req-grid {
-    grid-template-columns: 1fr;
+  .req-chip {
+    flex: 1 1 calc(50% - 0.65rem);
+    min-width: 0;
   }
 }
