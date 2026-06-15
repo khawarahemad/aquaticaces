@@ -99,6 +99,7 @@ object ModuleManager {
         modules.add(SelfDestruct())
         modules.add(Hitboxes())
         modules.add(Reach())
+        modules.add(AimBot())
     }
 
     fun getModuleByName(name: String): Module? =

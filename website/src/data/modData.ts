@@ -1,6 +1,6 @@
 export const MOD = {
   name: 'Aquatic Aces',
-  version: '1.0.0',
+  version: '1.1.0',
   minecraft: '1.21',
   loader: '0.15.11',
   fabricApi: '0.100.3+1.21',
@@ -17,7 +17,7 @@ export const DOWNLOADS = [
     name: 'Aquatic Aces',
     version: MOD.version,
     description: 'The main mod — drop into your mods folder.',
-    file: '/downloads/aquaticaces-1.0.0.jar',
+    file: '/downloads/aquaticaces-1.1.0.jar',
     size: '~500 KB',
     primary: true,
     icon: '⚡',
@@ -216,9 +216,9 @@ export const MODULE_CATEGORIES = [
   },
   {
     name: 'Ghost',
-    count: 3,
+    count: 4,
     color: '#888899',
-    modules: ['SelfDestruct', 'Hitboxes', 'Reach'],
+    modules: ['SelfDestruct', 'Hitboxes', 'Reach', 'AimBot'],
   },
 ] as const
 
@@ -259,7 +259,7 @@ export const INSTALL_STEPS = [
   {
     step: 5,
     title: 'Add Aquatic Aces',
-    body: 'Download aquaticaces-1.0.0.jar from this page and drop it into .minecraft/mods alongside Fabric API and Fabric Language Kotlin.',
+    body: 'Download aquaticaces-1.1.0.jar from this page and drop it into .minecraft/mods alongside Fabric API and Fabric Language Kotlin.',
   },
   {
     step: 6,

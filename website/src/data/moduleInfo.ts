@@ -284,6 +284,10 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     description: 'Extends attack and interaction range.',
     benefit: 'Hit and interact from farther away than vanilla allows.',
   },
+  AimBot: {
+    description: 'Ghost head assist while attacking crosshair targets.',
+    benefit: 'While you hold left-click on an enemy in range, it subtly pulls your aim to their head so hits land cleaner — built for ghost play.',
+  },
 }
 
 export function getModuleInfo(name: string): ModuleInfo {

@@ -8,7 +8,12 @@ object ModuleConflicts {
         "Blink" to listOf("Freecam", "Scaffold"),
         "Flight" to listOf("Freecam", "ElytraFly"),
         "ElytraFly" to listOf("Flight"),
-        "Zoom" to listOf("Freecam")
+        "Zoom" to listOf("Freecam"),
+        "AimBot" to listOf("AimAssist", "SilentAim", "KillAura", "TriggerBot"),
+        "AimAssist" to listOf("AimBot"),
+        "SilentAim" to listOf("AimBot"),
+        "KillAura" to listOf("AimBot"),
+        "TriggerBot" to listOf("AimBot"),
     )
 
     fun disableConflicting(module: Module) {
