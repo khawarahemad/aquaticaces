@@ -1,0 +1,31 @@
+{
+  "required": true,
+  "package": "com.aquaticaces.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "MixinMinecraftClient",
+    "MixinMinecraftScreen",
+    "MixinClientConnection",
+    "MixinInGameHud",
+    "MixinKeyboard",
+    "MixinLocalPlayer",
+    "MixinClientPlayerEntity",
+    "MixinBlockStateBase",
+    "MixinLivingEntity",
+    "MixinEntity",
+    "MixinLevelRenderer",
+    "MixinLivingEntityRenderer",
+    "MixinClipContext",
+    "MixinLightTexture",
+    "MixinEntityRenderer",
+    "MixinItemInHandRenderer",
+    "MixinJoinMultiplayerScreen",
+    "ServerboundInteractPacketMixin",
+    "ServerboundMovePlayerPacketAccessor",
+    "MinecraftUserAccessor",
+    "LivingEntityAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

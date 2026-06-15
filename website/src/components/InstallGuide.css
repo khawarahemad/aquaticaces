@@ -1,0 +1,164 @@
+.install-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.timeline-step {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem 1.75rem;
+  align-items: flex-start;
+}
+
+.timeline-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.timeline-num {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(0, 198, 255, 0.35);
+}
+
+.timeline-line {
+  width: 2px;
+  flex: 1;
+  min-height: 24px;
+  margin-top: 0.5rem;
+  background: linear-gradient(180deg, var(--accent), transparent);
+  opacity: 0.4;
+}
+
+.timeline-body h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.timeline-body p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+.mods-folder {
+  padding: 1.75rem 2rem;
+}
+
+.mods-folder-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.folder-icon {
+  font-size: 2rem;
+}
+
+.mods-folder-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.mods-folder-header code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+.folder-files {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.folder-file {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.folder-file--main {
+  border-color: rgba(0, 198, 255, 0.35);
+  background: rgba(0, 198, 255, 0.06);
+}
+
+.file-icon {
+  font-size: 1.1rem;
+}
+
+.file-tag {
+  margin-left: auto;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-dim);
+}
+
+.file-tag--accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .timeline-step {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  .timeline-marker {
+    flex-direction: row;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .timeline-line {
+    width: auto;
+    flex: 1;
+    height: 2px;
+    min-height: 0;
+    margin-top: 0;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .mods-folder {
+    padding: 1.25rem;
+  }
+
+  .folder-file {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .file-tag {
+    margin-left: 0;
+    width: 100%;
+    text-align: center;
+  }
+}

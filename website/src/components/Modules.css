@@ -1,0 +1,220 @@
+.modules-shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  overflow: hidden;
+  min-height: 420px;
+}
+
+.modules-sidebar {
+  padding: 1rem;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.cat-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.25s;
+  overflow: hidden;
+}
+
+.cat-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cat-btn.active {
+  color: var(--text);
+}
+
+.cat-btn-indicator {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--cat) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cat) 30%, transparent);
+  border-radius: 10px;
+  z-index: -1;
+}
+
+.cat-btn-count {
+  font-size: 0.72rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.cat-btn.active .cat-btn-count {
+  background: color-mix(in srgb, var(--cat) 20%, transparent);
+  color: var(--cat);
+}
+
+.modules-main {
+  padding: 1.5rem;
+}
+
+.modules-main-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.modules-main-header h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin-bottom: 0.2rem;
+}
+
+.modules-main-header p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.module-search {
+  padding: 0.65rem 1rem 0.65rem 2.25rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.88rem;
+  min-width: 220px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%237a7a94' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242 1.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0.75rem center;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.module-search:focus {
+  outline: none;
+  border-color: var(--border-glow);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.module-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.module-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid color-mix(in srgb, var(--chip-color) 25%, var(--border));
+  color: var(--text);
+  cursor: default;
+}
+
+.module-chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--chip-color);
+  box-shadow: 0 0 8px var(--chip-color);
+}
+
+.module-empty {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  padding: 2rem;
+  width: 100%;
+  text-align: center;
+}
+
+.module-marquee {
+  margin-top: 3rem;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+}
+
+.marquee-track {
+  display: flex;
+  gap: 1rem;
+  animation: marquee 40s linear infinite;
+  width: max-content;
+}
+
+.marquee-item {
+  padding: 0.4rem 1rem;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  white-space: nowrap;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (max-width: 768px) {
+  .modules-shell {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .modules-sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem;
+  }
+
+  .cat-btn {
+    flex: 1 1 calc(50% - 0.35rem);
+    min-width: 0;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .modules-main {
+    padding: 1.25rem;
+  }
+
+  .modules-main-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .module-search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .module-marquee {
+    margin-top: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cat-btn {
+    flex: 1 1 100%;
+  }
+}

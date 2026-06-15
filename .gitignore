@@ -1,0 +1,28 @@
+# Gradle
+.gradle/
+build/
+!website/public/downloads/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+.DS_Store
+
+# Java/Kotlin
+*.class
+*.jar
+!website/public/downloads/*.jar
+
+# Website
+website/node_modules/
+website/dist/
+
+# Env / secrets
+.env
+.env.*
+*.pem
+
+# OS
+Thumbs.db

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "aquaticaces",
+  "version": "${version}",
+  "name": "Aquatic Aces",
+  "description": "An advanced, modular Fabric client utilizing NanoVG and a high-speed event routing architecture.",
+  "authors": [
+    "Aquatic Aces Team"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "com.aquaticaces.AquaticAces"
+      }
+    ]
+  },
+  "mixins": [
+    "aquaticaces.mixins.json"
+  ],
+    "depends": {
+    "fabricloader": ">=0.15.0",
+    "fabric-language-kotlin": ">=1.11.0",
+    "minecraft": "1.21",
+    "fabric": "*"
+  }
+}
