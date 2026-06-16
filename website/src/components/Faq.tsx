@@ -9,6 +9,7 @@ import './Faq.css'
 const QUICK_LINKS = [
   { label: 'Download', href: '#download', desc: 'Get the latest jar' },
   { label: 'Setup Guide', href: '#install', desc: 'Step-by-step install' },
+  { label: 'Discord', href: MOD.discordUrl, desc: 'Join the community', external: true },
   { label: 'Source Repo', href: MOD.repoUrl, desc: 'Build from source', external: true },
 ] as const
 

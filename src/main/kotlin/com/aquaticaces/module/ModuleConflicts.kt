@@ -4,16 +4,22 @@ import com.aquaticaces.core.NotificationManager
 
 object ModuleConflicts {
     private val conflicts: Map<String, List<String>> = mapOf(
-        "Freecam" to listOf("Scaffold", "Surround", "Blink", "Flight"),
-        "Blink" to listOf("Freecam", "Scaffold"),
+        "Freecam" to listOf("Scaffold", "AirScaffold", "Surround", "Blink", "Flight"),
+        "Blink" to listOf("Freecam", "Scaffold", "AirScaffold"),
         "Flight" to listOf("Freecam", "ElytraFly"),
         "ElytraFly" to listOf("Flight"),
         "Zoom" to listOf("Freecam"),
+        "Scaffold" to listOf("AirScaffold"),
+        "AirScaffold" to listOf("Scaffold", "Freecam", "Blink"),
+        "WallHit" to listOf("KillAura", "TriggerBot"),
+        "KillAura" to listOf("AimBot", "WallHit"),
+        "BedAura" to listOf("AutoAnchor", "AutoCrystal"),
+        "AutoAnchor" to listOf("BedAura"),
+        "AutoCrystal" to listOf("BedAura"),
         "AimBot" to listOf("AimAssist", "SilentAim", "KillAura", "TriggerBot"),
         "AimAssist" to listOf("AimBot"),
         "SilentAim" to listOf("AimBot"),
-        "KillAura" to listOf("AimBot"),
-        "TriggerBot" to listOf("AimBot"),
+        "TriggerBot" to listOf("AimBot", "WallHit"),
     )
 
     fun disableConflicting(module: Module) {

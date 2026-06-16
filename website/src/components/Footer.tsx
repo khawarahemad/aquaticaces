@@ -38,7 +38,8 @@ export function Footer() {
             <a href="https://adoptium.net/temurin/releases/?version=21" target="_blank" rel="noopener noreferrer">Java 21</a>
           </div>
           <div className="footer-col">
-            <h4>Project</h4>
+            <h4>Community</h4>
+            <a href={MOD.discordUrl} target="_blank" rel="noopener noreferrer">Discord Server</a>
             <a href={MOD.repoUrl} target="_blank" rel="noopener noreferrer">Source Repo</a>
             <a href="https://www.figma.com/design/X9yZix9KMGPpcUh4HJoean" target="_blank" rel="noopener noreferrer">Figma Design</a>
             <span className="footer-meta">v{MOD.version}</span>

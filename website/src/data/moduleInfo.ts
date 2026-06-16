@@ -72,6 +72,14 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     description: 'Fills the hole you are standing in.',
     benefit: 'Closes the hole you’re standing in so enemies can’t easily crystal or trap you.',
   },
+  WallHit: {
+    description: 'Attacks enemies through walls.',
+    benefit: 'Hits the closest target without line-of-sight — damage through cover when they think they’re safe.',
+  },
+  BedAura: {
+    description: 'Places and explodes beds on targets.',
+    benefit: 'Automates Nether/End bed bombing — place and detonate beds near enemies for massive burst damage.',
+  },
   Sprint: {
     description: 'Always sprints when moving.',
     benefit: 'Never walk accidentally — you’re always at full movement speed.',
@@ -91,6 +99,10 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
   Scaffold: {
     description: 'Places blocks perfectly underfoot.',
     benefit: 'Automatically places blocks below you while bridging — essential for sky walks and towers.',
+  },
+  AirScaffold: {
+    description: 'Auto-places blocks while airborne.',
+    benefit: 'Bridges underfoot and ahead even in mid-air — keep building paths while jumping or falling.',
   },
   Jesus: {
     description: 'Allows walking on liquids.',

@@ -17,7 +17,7 @@ plugins {
     id("fabric-loom") version "1.10.5"
 }
 
-version = "1.1.0"
+version = "1.2.0"
 group = "com.aquaticaces"
 
 base {

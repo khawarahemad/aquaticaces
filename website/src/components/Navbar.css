@@ -150,6 +150,28 @@
   transition: color 0.25s, border-color 0.25s, background 0.25s, transform 0.25s;
 }
 
+.navbar-discord {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.52rem 0.85rem;
+  border-radius: 9px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border: 1px solid rgba(88, 101, 242, 0.35);
+  background: rgba(88, 101, 242, 0.08);
+  white-space: nowrap;
+  transition: color 0.25s, border-color 0.25s, background 0.25s, transform 0.25s;
+}
+
+.navbar-discord:hover {
+  color: #c8cdff;
+  border-color: rgba(88, 101, 242, 0.55);
+  background: rgba(88, 101, 242, 0.14);
+  transform: translateY(-1px);
+}
+
 .navbar-repo:hover {
   color: var(--text);
   border-color: var(--border-glow);
@@ -380,6 +402,25 @@
   flex-shrink: 0;
 }
 
+.mobile-discord {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #c8cdff;
+  border: 1px solid rgba(88, 101, 242, 0.35);
+  background: rgba(88, 101, 242, 0.1);
+}
+
+.mobile-discord:hover {
+  color: #dce0ff;
+  border-color: rgba(88, 101, 242, 0.55);
+}
+
 .mobile-repo {
   display: inline-flex;
   align-items: center;
@@ -439,11 +480,13 @@
     display: none;
   }
 
-  .navbar-repo span {
+  .navbar-repo span,
+  .navbar-discord span {
     display: none;
   }
 
-  .navbar-repo {
+  .navbar-repo,
+  .navbar-discord {
     padding: 0.52rem;
   }
 }
@@ -472,7 +515,8 @@
   }
 
   .navbar-links,
-  .navbar-repo {
+  .navbar-repo,
+  .navbar-discord {
     display: none;
   }
 

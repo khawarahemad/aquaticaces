@@ -21,6 +21,7 @@ export function buildStructuredData() {
         '@type': 'Organization',
         name: SITE.author,
         url: MOD.repoUrl,
+        sameAs: [MOD.repoUrl, MOD.discordUrl],
       },
     },
     {
@@ -41,6 +42,7 @@ export function buildStructuredData() {
         '@type': 'Organization',
         name: SITE.author,
         url: MOD.repoUrl,
+        sameAs: [MOD.repoUrl, MOD.discordUrl],
       },
       offers: {
         '@type': 'Offer',

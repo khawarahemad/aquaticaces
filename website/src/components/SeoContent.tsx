@@ -29,6 +29,7 @@ export function SeoContent() {
           <a href="#features">Features</a>
           <a href="#faq">FAQ</a>
           <a href={MOD.repoUrl}>GitHub source</a>
+          <a href={MOD.discordUrl}>Discord community</a>
           <a href={SITE.releaseUrl}>Latest GitHub release</a>
         </nav>
       </div>

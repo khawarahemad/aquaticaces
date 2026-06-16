@@ -1,6 +1,6 @@
 export const MOD = {
   name: 'Aquatic Aces',
-  version: '1.1.0',
+  version: '1.2.0',
   minecraft: '1.21',
   loader: '0.15.11',
   fabricApi: '0.100.3+1.21',
@@ -10,6 +10,7 @@ export const MOD = {
   commandPrefix: '.',
   defaultProfile: 'Ghost',
   repoUrl: 'https://github.com/khawarahemad/aquaticaces',
+  discordUrl: 'https://discord.gg/GMDf9vWeuQ',
 } as const
 
 export const DOWNLOADS = [
@@ -17,7 +18,7 @@ export const DOWNLOADS = [
     name: 'Aquatic Aces',
     version: MOD.version,
     description: 'The main mod — drop into your mods folder.',
-    file: '/downloads/aquaticaces-1.1.0.jar',
+    file: '/downloads/aquaticaces-1.2.0.jar',
     size: '~500 KB',
     primary: true,
     icon: '⚡',
@@ -96,7 +97,7 @@ export const FEATURES = [
     highlights: ['6 overlays', 'Drag positions'],
   },
   {
-    title: '60+ Modules',
+    title: '63+ Modules',
     description:
       'Combat, Movement, Render, World, Exploit, Player, Utility, and Ghost — each with configurable settings.',
     icon: '🧩',
@@ -160,20 +161,21 @@ export const FEATURES = [
 export const MODULE_CATEGORIES = [
   {
     name: 'Combat',
-    count: 17,
+    count: 19,
     color: '#ff4466',
     modules: [
       'AntiBot', 'Backtrack', 'KillAura', 'TriggerBot', 'AimAssist', 'SilentAim',
       'AutoCrystal', 'AutoAnchor', 'Criticals', 'Velocity', 'KeepSprint',
       'ShieldBreaker', 'WTap', 'AutoPot', 'NoSwing', 'Surround', 'HoleFill',
+      'WallHit', 'BedAura',
     ],
   },
   {
     name: 'Movement',
-    count: 14,
+    count: 15,
     color: '#00c6ff',
     modules: [
-      'Sprint', 'Flight', 'Speed', 'Step', 'Scaffold', 'Jesus', 'NoSlowdown',
+      'Sprint', 'Flight', 'Speed', 'Step', 'Scaffold', 'AirScaffold', 'Jesus', 'NoSlowdown',
       'Blink', 'NoFall', 'SafeWalk', 'Parkour', 'Spider', 'LongJump', 'ElytraFly',
     ],
   },
@@ -259,7 +261,7 @@ export const INSTALL_STEPS = [
   {
     step: 5,
     title: 'Add Aquatic Aces',
-    body: 'Download aquaticaces-1.1.0.jar from this page and drop it into .minecraft/mods alongside Fabric API and Fabric Language Kotlin.',
+    body: 'Download aquaticaces-1.2.0.jar from this page and drop it into .minecraft/mods alongside Fabric API and Fabric Language Kotlin.',
   },
   {
     step: 6,

@@ -59,6 +59,14 @@ export function Hero() {
             >
               Source Repo ↗
             </a>
+            <a
+              href={MOD.discordUrl}
+              className="btn btn-secondary btn-discord"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Join Discord ↗
+            </a>
           </div>
 
           <div className="hero-stats">
