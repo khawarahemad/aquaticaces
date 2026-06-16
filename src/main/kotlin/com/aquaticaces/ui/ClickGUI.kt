@@ -74,6 +74,12 @@ class ClickGUI : Screen(Component.literal("ClickGUI")) {
     private var selected: Module? = null
     private var gridScroll = 0f
     private var maxGridScroll = 0f
+    private var settingsScroll = 0f
+    private var maxSettingsScroll = 0f
+    private var settingsPanelX = 0
+    private var settingsPanelY = 0
+    private var settingsPanelW = 0
+    private var settingsPanelH = 0
     private var draggingSlider: NumberSetting? = null
     private var draggingBarX = 0
     private var draggingBarW = 0
@@ -197,17 +203,18 @@ class ClickGUI : Screen(Component.literal("ClickGUI")) {
         val modulesAll = ModuleManager.modules.filter { it.category == activeCategory }
         val q = searchQuery
         val modules = if (q.isBlank()) modulesAll else modulesAll.filter { it.name.lowercase().contains(q) }
-        g.drawString(font, "${modules.size} modules  ·  left-click toggle  ·  right-click settings", mainX, headerY + 12, DIM, false)
+        g.drawString(font, "${modules.size} modules  |  LMB toggle  |  RMB settings", mainX, headerY + 12, DIM, false)
 
-        // settings panel reserve
         val sel = selected
-        val detailH = if (sel != null) 120 else 0
+        val settingsW = if (sel != null) (mainW * 0.42f).toInt().coerceIn(210, 290) else 0
+        val chipsRight = if (sel != null) mainX + mainW - settingsW - 12 else mainRight
+        val settingsX = chipsRight + 12
         val gridTop = headerY + 28
-        val gridBottom = cardY + cardH - 12 - (if (detailH > 0) detailH + 8 else 0)
+        val gridBottom = cardY + cardH - 12
 
         // ---- Module chips (scissored, scrollable) ----
         chipRects.clear()
-        g.enableScissor(mainX, gridTop, mainRight, gridBottom)
+        g.enableScissor(mainX, gridTop, chipsRight, gridBottom)
         var cx = mainX
         var cy = gridTop - gridScroll.toInt()
         val chipH = 18
@@ -217,7 +224,7 @@ class ClickGUI : Screen(Component.literal("ClickGUI")) {
         for (module in modules) {
             val label = module.name
             val cw = font.width(label) + 22
-            if (cx + cw > mainRight) {
+            if (cx + cw > chipsRight) {
                 cx = mainX
                 cy += chipH + gapY
             }
@@ -257,106 +264,125 @@ class ClickGUI : Screen(Component.literal("ClickGUI")) {
         maxGridScroll = max(0f, (contentBottom - gridTop - visible).toFloat() + 4f)
         gridScroll = gridScroll.coerceIn(0f, maxGridScroll)
         if (maxGridScroll > 0f) {
-            val trackX = mainRight - 2
+            val trackX = chipsRight - 2
             val sbH = (visible * visible / (visible + maxGridScroll)).toInt().coerceAtLeast(20)
             val sbY = gridTop + ((visible - sbH) * (gridScroll / maxGridScroll)).toInt()
             g.fill(trackX, gridTop, trackX + 2, gridBottom, 0x22FFFFFF)
             g.fill(trackX, sbY, trackX + 2, sbY + sbH, withAlpha(catCol, 0xAA))
         }
 
-        // ---- Settings detail panel ----
+        // ---- Settings side panel ----
         toggleRects.clear()
         modeRects.clear()
         sliderRects.clear()
+        enableW = 0
         if (sel != null) {
-            val dx = mainX
-            val dy = gridBottom + 8
-            val dw = mainRight - mainX
-            val dh = detailH
-            g.fillGradient(dx, dy, dx + dw, dy + dh, withAlpha(catCol, 0x14), 0x66000000)
-            outline(g, dx, dy, dx + dw, dy + dh, withAlpha(catCol, 0x44))
-            g.fill(dx, dy, dx + dw, dy + 1, withAlpha(catCol, 0xAA))
+            val sx = settingsX
+            val sy = gridTop
+            val sw = mainRight - sx
+            val sh = gridBottom - gridTop
+            g.fillGradient(sx, sy, sx + sw, sy + sh, withAlpha(catCol, 0x18), 0x88000000.toInt())
+            outline(g, sx, sy, sx + sw, sy + sh, withAlpha(catCol, 0x55))
+            g.fillGradient(sx, sy, sx + sw, sy + 1, catCol, withAlpha(catCol, 0x44))
 
-            g.drawString(font, sel.name, dx + 10, dy + 8, catCol, false)
-            val desc = font.plainSubstrByWidth(sel.description, dw - 90)
-            g.drawString(font, desc, dx + 10, dy + 20, MUTED, false)
+            g.drawString(font, sel.name, sx + 10, sy + 8, catCol, false)
+            val desc = font.plainSubstrByWidth(sel.description, sw - 20)
+            g.drawString(font, desc, sx + 10, sy + 20, MUTED, false)
 
-            // enable toggle pill (top-right)
-            enableW = 52
+            enableW = 56
             enableH = 16
-            enableX = dx + dw - enableW - 10
-            enableY = dy + 8
+            enableX = sx + sw - enableW - 10
+            enableY = sy + 8
             val on = sel.isEnabled
             g.fill(enableX, enableY, enableX + enableW, enableY + enableH, if (on) withAlpha(SUCCESS, 0xCC) else 0x44000000)
             outline(g, enableX, enableY, enableX + enableW, enableY + enableH, if (on) SUCCESS else BORDER)
-            val lbl = if (on) "ENABLED" else "OFF"
+            val lbl = if (on) "ON" else "OFF"
             g.drawString(font, lbl, enableX + (enableW - font.width(lbl)) / 2, enableY + 4, if (on) 0xFF02030A.toInt() else MUTED, false)
 
-            // settings rows (scissored)
-            val sy0 = dy + 36
-            g.enableScissor(dx, sy0, dx + dw, dy + dh)
-            var sy = sy0
-            val rowH = 16
+            g.fill(sx + 8, sy + 34, sx + sw - 8, sy + 35, withAlpha(catCol, 0x33))
+            g.drawString(font, "Settings", sx + 10, sy + 40, TEXT, false)
+
+            val panelTop = sy + 54
+            val panelBottom = sy + sh - 4
+            val panelVisibleH = panelBottom - panelTop
+            var contentH = 0
             for (setting in sel.settings) {
                 if (!setting.isVisible()) continue
-                if (sy + rowH > dy + dh) break
+                contentH += when (setting) {
+                    is NumberSetting -> 22
+                    else -> 16
+                }
+            }
+            maxSettingsScroll = (contentH - panelVisibleH).coerceAtLeast(0).toFloat()
+            settingsScroll = settingsScroll.coerceIn(0f, maxSettingsScroll)
+            settingsPanelX = sx
+            settingsPanelY = panelTop
+            settingsPanelW = sw
+            settingsPanelH = panelVisibleH
+
+            g.enableScissor(sx, panelTop, sx + sw, panelBottom)
+            var rowY = panelTop - settingsScroll.toInt()
+            for (setting in sel.settings) {
+                if (!setting.isVisible()) continue
                 when (setting) {
                     is BooleanSetting -> {
-                        g.drawString(font, setting.name, dx + 12, sy + 3, TEXT, false)
-                        val pw = 34
-                        val px = dx + dw - pw - 12
+                        g.drawString(font, setting.name, sx + 12, rowY + 3, TEXT, false)
+                        val pw = 36
+                        val px = sx + sw - pw - 12
                         val v = setting.value
-                        g.fill(px, sy, px + pw, sy + 13, if (v) withAlpha(catCol, 0xCC) else 0x33000000)
-                        outline(g, px, sy, px + pw, sy + 13, if (v) catCol else BORDER)
+                        g.fill(px, rowY, px + pw, rowY + 14, if (v) withAlpha(catCol, 0xCC) else 0x33000000)
+                        outline(g, px, rowY, px + pw, rowY + 14, if (v) catCol else BORDER)
                         val t = if (v) "ON" else "OFF"
-                        g.drawString(font, t, px + (pw - font.width(t)) / 2, sy + 3, if (v) 0xFF02030A.toInt() else MUTED, false)
-                        toggleRects.add(ToggleRect(setting, px, sy, pw, 13))
-                        sy += rowH
+                        g.drawString(font, t, px + (pw - font.width(t)) / 2, rowY + 3, if (v) 0xFF02030A.toInt() else MUTED, false)
+                        toggleRects.add(ToggleRect(setting, px, rowY, pw, 14))
+                        rowY += 16
                     }
                     is ModeSetting -> {
-                        g.drawString(font, setting.name, dx + 12, sy + 3, TEXT, false)
+                        g.drawString(font, setting.name, sx + 12, rowY + 3, TEXT, false)
                         val text = setting.value
-                        val pw = font.width(text) + 16
-                        val px = dx + dw - pw - 12
-                        g.fill(px, sy, px + pw, sy + 13, withAlpha(catCol, 0x22))
-                        outline(g, px, sy, px + pw, sy + 13, withAlpha(catCol, 0x66))
-                        g.drawString(font, text, px + 8, sy + 3, catCol, false)
-                        modeRects.add(ModeRect(setting, px, sy, pw, 13))
-                        sy += rowH
+                        val pw = (font.width(text) + 18).coerceAtMost(sw - 80)
+                        val px = sx + sw - pw - 12
+                        g.fill(px, rowY, px + pw, rowY + 14, withAlpha(catCol, 0x28))
+                        outline(g, px, rowY, px + pw, rowY + 14, withAlpha(catCol, 0x77))
+                        g.drawString(font, text, px + 8, rowY + 3, catCol, false)
+                        modeRects.add(ModeRect(setting, px, rowY, pw, 14))
+                        rowY += 16
                     }
                     is NumberSetting -> {
                         val valTxt = formatNum(setting.value)
-                        g.drawString(font, setting.name, dx + 12, sy + 1, TEXT, false)
-                        g.drawString(font, valTxt, dx + dw - font.width(valTxt) - 12, sy + 1, catCol, false)
-                        val barX = dx + 12
-                        val barW = dw - 24
-                        val barY = sy + 11
-                        g.fill(barX, barY, barX + barW, barY + 3, 0x44000000)
+                        g.drawString(font, setting.name, sx + 12, rowY + 1, TEXT, false)
+                        g.drawString(font, valTxt, sx + sw - font.width(valTxt) - 12, rowY + 1, catCol, false)
+                        val barX = sx + 12
+                        val barW = sw - 24
+                        val barY = rowY + 13
+                        g.fill(barX, barY, barX + barW, barY + 4, 0x44000000)
                         val ratio = ((setting.value - setting.min) / (setting.max - setting.min)).toFloat().coerceIn(0f, 1f)
                         val fillW = (barW * ratio).toInt()
-                        g.fillGradient(barX, barY, barX + fillW, barY + 3, ACCENT, ACCENT_2)
-                        g.fill(barX + fillW - 1, barY - 2, barX + fillW + 2, barY + 5, TEXT)
-                        sliderRects.add(SliderRect(setting, barX, barY - 3, barW, 9))
-                        sy += rowH + 6
+                        if (fillW > 0) g.fillGradient(barX, barY, barX + fillW, barY + 4, ACCENT, ACCENT_2)
+                        sliderRects.add(SliderRect(setting, barX, barY - 2, barW, 8))
+                        rowY += 22
                     }
                     is ColorSetting -> {
-                        g.drawString(font, setting.name, dx + 12, sy + 3, TEXT, false)
-                        val sw = 30
-                        val px = dx + dw - sw - 12
-                        g.fill(px, sy, px + sw, sy + 13, setting.value)
-                        outline(g, px, sy, px + sw, sy + 13, BORDER)
-                        sy += rowH
+                        g.drawString(font, setting.name, sx + 12, rowY + 3, TEXT, false)
+                        val cw = 34
+                        val px = sx + sw - cw - 12
+                        g.fill(px, rowY, px + cw, rowY + 14, setting.value)
+                        outline(g, px, rowY, px + cw, rowY + 14, BORDER)
+                        rowY += 16
                     }
                     else -> {
-                        g.drawString(font, setting.name, dx + 12, sy + 3, MUTED, false)
-                        sy += rowH
+                        g.drawString(font, setting.name, sx + 12, rowY + 3, MUTED, false)
+                        rowY += 16
                     }
                 }
             }
             if (sel.settings.none { it.isVisible() }) {
-                g.drawString(font, "No configurable settings.", dx + 12, sy0 + 2, DIM, false)
+                g.drawString(font, "No settings for this module.", sx + 12, panelTop + 4, DIM, false)
             }
             g.disableScissor()
+        } else {
+            settingsScroll = 0f
+            settingsPanelW = 0
         }
     }
 
@@ -404,6 +430,7 @@ class ClickGUI : Screen(Component.literal("ClickGUI")) {
             if (mx in r.x..(r.x + r.w) && my in r.y..(r.y + r.h)) {
                 if (button == 1) {
                     selected = if (selected == r.module) null else r.module
+                    settingsScroll = 0f
                 } else {
                     r.module.toggle()
                 }
@@ -417,6 +444,7 @@ class ClickGUI : Screen(Component.literal("ClickGUI")) {
                     activeCategory = r.category
                     selected = null
                     gridScroll = 0f
+                    settingsScroll = 0f
                 }
                 return true
             }
@@ -446,6 +474,15 @@ class ClickGUI : Screen(Component.literal("ClickGUI")) {
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, scrollX: Double, scrollY: Double): Boolean {
+        if (selected != null && settingsPanelW > 0) {
+            val mx = mouseX.toInt()
+            val my = mouseY.toInt()
+            if (mx in settingsPanelX..(settingsPanelX + settingsPanelW) &&
+                my in settingsPanelY..(settingsPanelY + settingsPanelH)) {
+                settingsScroll = (settingsScroll - scrollY.toFloat() * 16f).coerceIn(0f, maxSettingsScroll)
+                return true
+            }
+        }
         gridScroll = (gridScroll - scrollY.toFloat() * 18f).coerceIn(0f, maxGridScroll)
         return true
     }

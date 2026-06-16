@@ -1,14 +1,16 @@
 package com.aquaticaces.mixin;
 
+import com.aquaticaces.module.impl.ghost.Hitboxes;
+import com.aquaticaces.module.impl.movement.Step;
 import com.aquaticaces.module.Module;
 import com.aquaticaces.module.ModuleManager;
-import com.aquaticaces.module.impl.movement.Step;
 import com.aquaticaces.module.setting.ModeSetting;
 import com.aquaticaces.module.setting.NumberSetting;
 import com.aquaticaces.module.setting.Setting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.AABB;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,20 +19,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Entity.class)
 public class MixinEntity {
 
-    @Inject(method = "getPickRadius", at = @At("HEAD"), cancellable = true)
-    private void onGetPickRadius(CallbackInfoReturnable<Float> cir) {
+    /** Expand enemy hitboxes for easier targeting. */
+    @Inject(method = "getBoundingBox", at = @At("RETURN"), cancellable = true)
+    private void aquaticaces$expandHitboxes(CallbackInfoReturnable<AABB> cir) {
         if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
 
         Entity self = (Entity) (Object) this;
-        if (self instanceof LivingEntity && self != Minecraft.getInstance().player) {
-            Module hitboxes = ModuleManager.INSTANCE.getModuleByName("Hitboxes");
-            if (hitboxes != null && hitboxes.isEnabled()) {
-                // The first setting of Hitboxes is the expansion size
-                if (!hitboxes.getSettings().isEmpty()) {
-                    NumberSetting sizeSetting = (NumberSetting) hitboxes.getSettings().get(0);
-                    cir.setReturnValue(sizeSetting.getValue().floatValue());
-                }
-            }
+        if (!(self instanceof LivingEntity) || self == Minecraft.getInstance().player) return;
+
+        float expand = Hitboxes.expansion();
+        if (expand > 0f) {
+            cir.setReturnValue(cir.getReturnValue().inflate(expand, expand, expand));
         }
     }
 

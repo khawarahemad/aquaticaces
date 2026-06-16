@@ -2,8 +2,10 @@ package com.aquaticaces.mixin;
 
 import com.aquaticaces.AquaticAces;
 import com.aquaticaces.event.impl.EventClientTick;
+import com.aquaticaces.module.impl.world.FastPlace;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -11,9 +13,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public class MixinMinecraftClient {
 
+    @Shadow
+    private int rightClickDelay;
+
     @Inject(method = "tick", at = @At("HEAD"))
     private void preTick(CallbackInfo ci) {
         if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
+        if (FastPlace.isActive()) {
+            rightClickDelay = 0;
+        }
         AquaticAces.INSTANCE.getEventBus().post(new EventClientTick(EventClientTick.Phase.PRE));
     }
 

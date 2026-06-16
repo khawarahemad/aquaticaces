@@ -2,6 +2,7 @@ package com.aquaticaces.module.impl.combat
 
 import com.aquaticaces.event.Subscribe
 import com.aquaticaces.event.impl.EventClientTick
+import com.aquaticaces.module.impl.combat.NoSwing
 import com.aquaticaces.module.Category
 import com.aquaticaces.module.Module
 import com.aquaticaces.module.setting.NumberSetting
@@ -41,7 +42,9 @@ class TriggerBot : Module("TriggerBot", "Attacks entities in crosshair.", Catego
                 if (now - lastAttackTime >= nextAttackDelay) {
                     val interactPacket = ServerboundInteractPacket.createAttackPacket(entity, player.isShiftKeyDown)
                     player.connection.send(interactPacket)
-                    player.swing(InteractionHand.MAIN_HAND)
+                    if (!NoSwing.shouldHideSwing()) {
+                        player.swing(InteractionHand.MAIN_HAND)
+                    }
 
                     val min = minCPS.value.coerceAtMost(maxCPS.value)
                     val max = maxCPS.value.coerceAtLeast(minCPS.value)

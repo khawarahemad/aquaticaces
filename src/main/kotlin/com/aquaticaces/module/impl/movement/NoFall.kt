@@ -16,12 +16,21 @@ class NoFall : Module("NoFall", "Prevents fall damage.", Category.MOVEMENT) {
         if (!canRun()) return
         val player = mc.player ?: return
         if (player.fallDistance < 2f) return
-        if (event.packet is ServerboundMovePlayerPacket.Pos) {
-            if (mode.value == "OnGround") {
+
+        val spoofGround = mode.value == "OnGround" || mode.value == "Packet"
+        if (!spoofGround) return
+
+        when (val packet = event.packet) {
+            is ServerboundMovePlayerPacket.Pos ->
                 event.replace(ServerboundMovePlayerPacket.Pos(player.x, player.y, player.z, true))
-            }
-        } else if (event.packet is ServerboundMovePlayerPacket.StatusOnly && mode.value == "OnGround") {
-            event.replace(ServerboundMovePlayerPacket.StatusOnly(true))
+            is ServerboundMovePlayerPacket.PosRot ->
+                event.replace(ServerboundMovePlayerPacket.PosRot(
+                    player.x, player.y, player.z, player.yRot, player.xRot, true
+                ))
+            is ServerboundMovePlayerPacket.StatusOnly ->
+                event.replace(ServerboundMovePlayerPacket.StatusOnly(true))
         }
+
+        if (mode.value == "Packet") player.fallDistance = 0f
     }
 }

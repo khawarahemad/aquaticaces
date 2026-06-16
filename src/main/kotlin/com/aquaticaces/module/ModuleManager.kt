@@ -18,6 +18,7 @@ object ModuleManager {
         modules.add(AntiBot())
         modules.add(Backtrack())
         modules.add(KillAura())
+        modules.add(MaceAura())
         modules.add(WallHit())
         modules.add(TriggerBot())
         modules.add(AimAssist())

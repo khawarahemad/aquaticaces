@@ -57,7 +57,7 @@ object UiEngine {
     }
 
     fun drawAnimatedBackground(vr: VectorRenderer, width: Float, height: Float, tick: Float) {
-        vr.drawLinearGradientRect(0f, 0f, width, height, 0f, 0f, 0f, 0f, height, BrandedUi.BG_TOP, BrandedUi.BG_BOTTOM)
+        vr.drawLinearGradientRect(0f, 0f, width, height, 0f, 0f, 0f, 0f, height, UiStyle.BG_TOP, UiStyle.BG_BOT)
 
         val pulse = (sin(tick * 0.04f) * 0.5f + 0.5f)
         val glowAlpha = (0x18 + pulse * 0x20).toInt()

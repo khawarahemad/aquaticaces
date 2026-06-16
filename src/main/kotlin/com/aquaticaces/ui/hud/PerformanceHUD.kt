@@ -3,6 +3,7 @@ package com.aquaticaces.ui.hud
 import com.aquaticaces.core.HudSettings
 import com.aquaticaces.event.Subscribe
 import com.aquaticaces.event.impl.EventRender2D
+import com.aquaticaces.module.impl.utility.PingSpoof
 import com.aquaticaces.ui.UiStyle
 import net.minecraft.client.Minecraft
 
@@ -44,6 +45,6 @@ class PerformanceHUD {
     private fun pingMs(): Int {
         val player = mc.player ?: return -1
         val info = mc.connection?.getPlayerInfo(player.uuid) ?: return -1
-        return info.latency
+        return PingSpoof.displayPing(info.latency)
     }
 }

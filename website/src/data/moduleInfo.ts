@@ -16,6 +16,10 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     description: 'Automatically attacks nearby entities.',
     benefit: 'Auto-attacks enemies in range so you don’t have to click every swing in close fights.',
   },
+  MaceAura: {
+    description: 'Auto mace smash attacks with fall-distance bonus damage.',
+    benefit: 'Switches to your mace, jumps for smash hits, and auto-attacks nearby targets — built for 1.21 mace PvP.',
+  },
   TriggerBot: {
     description: 'Attacks entities in crosshair.',
     benefit: 'Only swings when your crosshair is on a target — precise and controlled auto-attacks.',

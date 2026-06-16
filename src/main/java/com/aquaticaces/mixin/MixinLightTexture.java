@@ -19,20 +19,25 @@ public class MixinLightTexture {
     @Shadow
     private NativeImage lightPixels;
 
-    @Inject(method = "updateLightTexture", at = @At("HEAD"), cancellable = true)
-    private void onUpdateLightTexture(float partialTicks, CallbackInfo ci) {
-        if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
+    /** Packed block/sky light value for full brightness (15, 15). */
+    private static int fullLightPixel() {
+        return (15 << 4) | (15 << 20);
+    }
 
-        if (XRay.isXrayEnabled()) {
-            if (lightPixels != null) {
-                for (int x = 0; x < 16; x++) {
-                    for (int y = 0; y < 16; y++) {
-                        lightPixels.setPixelRGBA(x, y, 0xFFFFFFFF);
-                    }
+    @Inject(method = "updateLightTexture", at = @At("HEAD"), cancellable = true)
+    private void aquaticaces$xrayFullBright(float partialTicks, CallbackInfo ci) {
+        if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
+        if (!XRay.useFullBright()) return;
+
+        if (lightPixels != null) {
+            int pixel = fullLightPixel();
+            for (int x = 0; x < 16; x++) {
+                for (int y = 0; y < 16; y++) {
+                    lightPixels.setPixelRGBA(x, y, pixel);
                 }
-                lightTexture.upload();
-                ci.cancel();
             }
+            lightTexture.upload();
+            ci.cancel();
         }
     }
 }
