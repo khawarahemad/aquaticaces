@@ -28,7 +28,19 @@ class KeybindManager {
         val pressedKey = event.key
         if (pressedKey == GLFW.GLFW_KEY_UNKNOWN) return
 
+        // ClickGUI opens reliably and directly, independent of the module
+        // toggle/notification machinery. Falls back to Right Shift if its
+        // bind was lost/cleared by an old config.
+        val clickGuiModule = ModuleManager.getModuleByName("ClickGUI") as? ClickGUIModule
+        val openKey = clickGuiModule?.keybind ?: GLFW.GLFW_KEY_RIGHT_SHIFT
+        if (pressedKey == openKey || (openKey <= 0 && pressedKey == GLFW.GLFW_KEY_RIGHT_SHIFT)) {
+            mc.execute { mc.setScreen(ClickGUI()) }
+            event.cancel()
+            return
+        }
+
         for (module in ModuleManager.modules) {
+            if (module === clickGuiModule) continue
             if (module.keybind == pressedKey) module.toggle()
         }
     }

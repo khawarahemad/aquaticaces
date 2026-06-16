@@ -147,8 +147,7 @@ class ClickGUI : Screen(Component.literal("ClickGUI")) {
         // logo mark
         val markX = cardX + 16
         val markY = cardY + 14
-        g.fillGradient(markX, markY, markX + 22, markY + 22, ACCENT, ACCENT_2)
-        g.drawString(font, "A", markX + 8, markY + 7, 0xFF02030A.toInt(), false)
+        UiStyle.logoMark(g, markX + 11, markY, 22)
         g.drawString(font, "AQUATIC ACES", markX + 32, markY + 3, ACCENT, false)
         g.drawString(font, "Module configuration", markX + 32, markY + 14, MUTED, false)
         g.fill(cardX, cardY + topBarH, cardX + cardW, cardY + topBarH + 1, BORDER)

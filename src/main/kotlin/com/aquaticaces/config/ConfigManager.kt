@@ -67,7 +67,8 @@ class ConfigManager {
         for (module in ModuleManager.modules) {
             if (category != null && module.category != category) continue
             val modProfile = profile.modules[module.name] ?: continue
-            module.keybind = modProfile.keybind
+            // Don't let a stale/empty saved bind (0) clobber a module's default keybind.
+            if (modProfile.keybind != 0) module.keybind = modProfile.keybind
             for ((settingName, settingValue) in modProfile.settings) {
                 module.settings.firstOrNull { it.name.equals(settingName, ignoreCase = true) }
                     ?.setValueFromString(settingValue)
