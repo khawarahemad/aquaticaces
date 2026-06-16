@@ -37,7 +37,7 @@ export const SITE = {
   themeColor: '#0a0b0f',
   twitterHandle: '@aquaticaces',
   releaseUrl: `${MOD.repoUrl}/releases/latest`,
-  downloadFile: 'aquaticaces-1.4.1.jar',
+  downloadFile: 'aquaticaces-1.4.2.jar',
 } as const
 
 export function absoluteUrl(path = '/') {

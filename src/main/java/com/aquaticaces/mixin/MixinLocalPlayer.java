@@ -2,12 +2,14 @@ package com.aquaticaces.mixin;
 
 import com.aquaticaces.AquaticAces;
 import com.aquaticaces.event.impl.EventMove;
+import com.aquaticaces.module.impl.movement.NoSlowdown;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LocalPlayer.class)
 public class MixinLocalPlayer {
@@ -26,4 +28,11 @@ public class MixinLocalPlayer {
         }
     }
 
+    @Inject(method = "isMovingSlowly", at = @At("HEAD"), cancellable = true)
+    private void aquaticaces$noSlowdown(CallbackInfoReturnable<Boolean> cir) {
+        if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
+        if (NoSlowdown.isActive()) {
+            cir.setReturnValue(false);
+        }
+    }
 }

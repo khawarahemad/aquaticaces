@@ -20,12 +20,21 @@ public class MixinClientConnection {
     @Inject(method = "send(Lnet/minecraft/network/protocol/Packet;)V", at = @At("HEAD"), cancellable = true)
     private void onPacketSend(Packet<?> packet, CallbackInfo ci) {
         if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
+
         EventPacketSend event = new EventPacketSend(packet);
         AquaticAces.INSTANCE.getEventBus().post(event);
         if (event.isCancelled()) {
             ci.cancel();
             return;
         }
+
+        Packet<?> toSend = event.packet;
+        if (toSend != packet) {
+            ci.cancel();
+            ((Connection) (Object) this).send(toSend);
+            return;
+        }
+
         if (packet instanceof ServerboundInteractPacket interact) {
             ServerboundInteractPacketAccess accessor = (ServerboundInteractPacketAccess) interact;
             if (accessor.aquaticaces_isAttack()) {

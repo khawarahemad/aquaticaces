@@ -1,5 +1,7 @@
 package com.aquaticaces.module.impl.render
 
+import com.aquaticaces.event.Subscribe
+import com.aquaticaces.event.impl.EventClientTick
 import com.aquaticaces.module.Category
 import com.aquaticaces.module.Module
 import com.aquaticaces.module.setting.BooleanSetting
@@ -81,11 +83,31 @@ class XRay : Module("XRay", "Reveals selected blocks through solid stone.", Cate
 
     override fun onEnable() {
         super.onEnable()
+        syncFullBright()
         mc.levelRenderer.allChanged()
     }
 
     override fun onDisable() {
+        clearFullBright()
         super.onDisable()
         mc.levelRenderer.allChanged()
+    }
+
+    @Subscribe
+    fun onTick(event: EventClientTick) {
+        if (event.phase != EventClientTick.Phase.PRE || !isEnabled) return
+        syncFullBright()
+    }
+
+    private fun syncFullBright() {
+        if (fullBright.value) {
+            if (mc.options.gamma().get() < 15.0) mc.options.gamma().set(16.0)
+        } else {
+            clearFullBright()
+        }
+    }
+
+    private fun clearFullBright() {
+        if (mc.options.gamma().get() >= 15.0) mc.options.gamma().set(1.0)
     }
 }

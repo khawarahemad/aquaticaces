@@ -1,6 +1,6 @@
 export const MOD = {
   name: 'Aquatic Aces',
-  version: '1.4.1',
+  version: '1.4.2',
   minecraft: '1.21',
   loader: '0.15.11',
   fabricApi: '0.100.3+1.21',
@@ -18,7 +18,7 @@ export const DOWNLOADS = [
     name: 'Aquatic Aces',
     version: MOD.version,
     description: 'The main mod — drop into your mods folder.',
-    file: '/downloads/aquaticaces-1.4.1.jar',
+    file: '/downloads/aquaticaces-1.4.2.jar',
     size: '~500 KB',
     primary: true,
     icon: '⚡',
@@ -261,7 +261,7 @@ export const INSTALL_STEPS = [
   {
     step: 5,
     title: 'Add Aquatic Aces',
-    body: 'Download aquaticaces-1.4.1.jar from this page and drop it into .minecraft/mods alongside Fabric API and Fabric Language Kotlin.',
+    body: 'Download aquaticaces-1.4.2.jar from this page and drop it into .minecraft/mods alongside Fabric API and Fabric Language Kotlin.',
   },
   {
     step: 6,

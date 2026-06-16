@@ -21,7 +21,7 @@ class EventRender2D(val guiGraphics: GuiGraphics, val partialTick: Float) : Even
     override fun isCancellable(): Boolean = false
 }
 
-class EventPacketSend(var packet: Packet<*>) : Event() {
+class EventPacketSend(@JvmField var packet: Packet<*>) : Event() {
     override fun isCancellable(): Boolean = true
     fun replace(newPacket: Packet<*>) { packet = newPacket }
 }

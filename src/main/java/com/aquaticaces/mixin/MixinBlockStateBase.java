@@ -18,7 +18,6 @@ public abstract class MixinBlockStateBase {
     @Shadow
     public abstract Block getBlock();
 
-    /** Hide non-target blocks entirely so chunk meshes don't draw stone/dirt. */
     @Inject(method = "getRenderShape", at = @At("HEAD"), cancellable = true)
     private void aquaticaces$xrayRenderShape(CallbackInfoReturnable<RenderShape> cir) {
         if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
@@ -27,7 +26,6 @@ public abstract class MixinBlockStateBase {
         }
     }
 
-    /** Skip adjacent faces between hidden blocks so underground gaps stay clean. */
     @Inject(
         method = "skipRendering(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;)Z",
         at = @At("HEAD"),
@@ -35,8 +33,11 @@ public abstract class MixinBlockStateBase {
     )
     private void aquaticaces$xraySkipRendering(BlockState adjacentState, Direction direction, CallbackInfoReturnable<Boolean> cir) {
         if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
-        if (XRay.isXrayEnabled()) {
-            cir.setReturnValue(!XRay.shouldRender(getBlock()));
-        }
+        if (!XRay.isXrayEnabled()) return;
+
+        Block self = getBlock();
+        Block adjacent = adjacentState.getBlock();
+        // Hide stone faces; keep ore exteriors; cull faces between two target blocks.
+        cir.setReturnValue(!XRay.shouldRender(self) || XRay.shouldRender(adjacent));
     }
 }

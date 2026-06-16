@@ -21,6 +21,8 @@ object ModuleConflicts {
         "AimAssist" to listOf("AimBot"),
         "SilentAim" to listOf("AimBot"),
         "TriggerBot" to listOf("AimBot", "WallHit"),
+        "XRay" to listOf("Fullbright"),
+        "Fullbright" to listOf("XRay"),
     )
 
     fun disableConflicting(module: Module) {

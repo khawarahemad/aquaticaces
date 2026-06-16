@@ -6,6 +6,7 @@ import com.aquaticaces.module.Category
 import com.aquaticaces.module.Module
 import com.aquaticaces.module.setting.NumberSetting
 import net.minecraft.client.gui.screens.ConnectScreen
+import net.minecraft.client.gui.screens.TitleScreen
 import net.minecraft.client.multiplayer.ServerData
 import net.minecraft.client.multiplayer.resolver.ServerAddress
 
@@ -25,7 +26,6 @@ class AutoReconnect : Module(
     fun onTick(event: EventClientTick) {
         if (event.phase != EventClientTick.Phase.PRE) return
 
-        // Remember the last server while connected.
         mc.currentServer?.let { lastServer = ServerData(it.name, it.ip, ServerData.Type.OTHER) }
 
         if (mc.player != null) {
@@ -33,14 +33,17 @@ class AutoReconnect : Module(
             return
         }
 
-        // Only reconnect when we were in a multiplayer session.
+        val screen = mc.screen
+        if (screen is ConnectScreen) return
+
         val server = lastServer ?: return
         if (reconnectAt == 0L) {
             reconnectAt = System.currentTimeMillis() + (delay.value * 1000).toLong()
         }
         if (System.currentTimeMillis() >= reconnectAt) {
             reconnectAt = 0L
-            ConnectScreen.startConnecting(null, mc, ServerAddress.parseString(server.ip), server, false, null)
+            val parent = if (screen is TitleScreen) null else screen
+            ConnectScreen.startConnecting(parent, mc, ServerAddress.parseString(server.ip), server, false, null)
         }
     }
 }

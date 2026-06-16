@@ -133,6 +133,17 @@ class ClickGUI : Screen(Component.literal("ClickGUI")) {
         super.render(guiGraphics, mouseX, mouseY, partialTick)
     }
 
+    override fun renderBackground(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
+        // Custom backdrop is drawn in drawScene — skip vanilla dimming.
+    }
+
+    override fun resize(minecraft: net.minecraft.client.Minecraft, width: Int, height: Int) {
+        super.resize(minecraft, width, height)
+        init(minecraft, width, height)
+    }
+
+    override fun isPauseScreen(): Boolean = false
+
     private fun drawScene(g: GuiGraphics, mouseX: Int, mouseY: Int) {
         val font = minecraft!!.font
 
