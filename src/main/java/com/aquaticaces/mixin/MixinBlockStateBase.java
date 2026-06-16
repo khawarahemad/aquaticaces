@@ -2,6 +2,8 @@ package com.aquaticaces.mixin;
 
 import com.aquaticaces.module.impl.render.XRay;
 import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -22,6 +24,7 @@ public abstract class MixinBlockStateBase {
     @Inject(method = "getRenderShape", at = @At("HEAD"), cancellable = true)
     private void aquaticaces$xrayRenderShape(CallbackInfoReturnable<RenderShape> cir) {
         if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
+        if (net.minecraft.client.Minecraft.getInstance() == null) return;
         if (XRay.isXrayEnabled() && !XRay.shouldRender(getBlock())) {
             cir.setReturnValue(RenderShape.INVISIBLE);
         }
@@ -35,8 +38,19 @@ public abstract class MixinBlockStateBase {
     )
     private void aquaticaces$xraySkipRendering(BlockState adjacentState, Direction direction, CallbackInfoReturnable<Boolean> cir) {
         if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
+        if (net.minecraft.client.Minecraft.getInstance() == null) return;
         if (XRay.isXrayEnabled()) {
             cir.setReturnValue(!XRay.shouldRender(getBlock()));
+        }
+    }
+
+    /** Prevent occlusion culling from hiding chunks when XRay is active. */
+    @Inject(method = "canOcclude", at = @At("HEAD"), cancellable = true)
+    private void aquaticaces$xrayCanOcclude(CallbackInfoReturnable<Boolean> cir) {
+        if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
+        if (net.minecraft.client.Minecraft.getInstance() == null) return;
+        if (XRay.isXrayEnabled()) {
+            cir.setReturnValue(false);
         }
     }
 }

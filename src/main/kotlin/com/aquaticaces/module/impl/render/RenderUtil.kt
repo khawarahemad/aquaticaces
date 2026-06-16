@@ -15,7 +15,26 @@ import org.lwjgl.opengl.GL11
  */
 object RenderUtil {
 
+    @JvmField
+    var activeProj: org.joml.Matrix4f? = null
+    @JvmField
+    var activeModelView: org.joml.Matrix4f? = null
+
     fun begin(lineWidth: Float = 2f) {
+        val proj = activeProj ?: return
+        val mv = activeModelView ?: return
+        begin(proj, mv, lineWidth)
+    }
+
+    fun begin(proj: org.joml.Matrix4f, modelView: org.joml.Matrix4f, lineWidth: Float = 2f) {
+        RenderSystem.backupProjectionMatrix()
+        RenderSystem.setProjectionMatrix(proj, com.mojang.blaze3d.vertex.VertexSorting.DISTANCE_TO_ORIGIN)
+
+        val modelViewStack = RenderSystem.getModelViewStack()
+        modelViewStack.pushMatrix()
+        modelViewStack.set(modelView)
+        RenderSystem.applyModelViewMatrix()
+
         RenderSystem.enableBlend()
         RenderSystem.defaultBlendFunc()
         RenderSystem.disableDepthTest()
@@ -31,6 +50,12 @@ object RenderUtil {
         RenderSystem.enableDepthTest()
         RenderSystem.enableCull()
         RenderSystem.disableBlend()
+
+        val modelViewStack = RenderSystem.getModelViewStack()
+        modelViewStack.popMatrix()
+        RenderSystem.applyModelViewMatrix()
+
+        RenderSystem.restoreProjectionMatrix()
     }
 
     fun quads(): BufferBuilder =

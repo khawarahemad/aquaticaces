@@ -123,4 +123,137 @@ object UiStyle {
             g.drawCenteredString(font, b.label, x + w / 2, y + h / 2 - 4, if (hover > 0.05f) ACCENT else TEXT)
         }
     }
+
+    const val SCREEN_PAD = 20
+    const val HEADER_H = 48
+    const val FOOTER_H = 58
+
+    /** Top bar used on every full-screen menu (logo + title + subtitle + divider). */
+    fun screenHeader(g: GuiGraphics, font: Font, width: Int, title: String, subtitle: String, accent: Int = ACCENT) {
+        BrandedUi.drawLogo(g, SCREEN_PAD + 6, 12, 28)
+        g.drawString(font, title, 56, 14, accent, true)
+        g.drawString(font, subtitle, 56, 28, MUTED, false)
+        g.fill(SCREEN_PAD, HEADER_H, width - SCREEN_PAD, HEADER_H + 1, BORDER)
+    }
+
+    fun footerStrip(g: GuiGraphics, width: Int, height: Int) {
+        val top = height - FOOTER_H
+        g.fill(0, top, width, height, 0xFF08090D.toInt())
+        g.fill(SCREEN_PAD, top, width - SCREEN_PAD, top + 1, BORDER)
+    }
+
+    enum class HeroIcon { WORLD, SERVERS, PLAY, CREATE, MANAGE }
+
+    /** Premium launcher tile — dark glass panel, icon column, left-aligned copy. */
+    fun heroTile(
+        g: GuiGraphics,
+        font: Font,
+        x: Int, y: Int, w: Int, h: Int,
+        title: String,
+        subtitle: String?,
+        accent: Int,
+        hover: Float,
+        icon: HeroIcon,
+    ) {
+        if (hover > 0.04f) {
+            g.fill(x - 1, y - 1, x + w + 1, y + h + 1, withAlpha(accent, (hover * 0x28).toInt()))
+        }
+        g.fill(x + 2, y + 3, x + w + 2, y + h + 3, 0x44000000)
+        g.fillGradient(x, y, x + w, y + h, 0xFF161922.toInt(), 0xFF0D0F14.toInt())
+        if (hover > 0.04f) g.fill(x, y, x + w, y + h, withAlpha(accent, (hover * 0x14).toInt()))
+        outline(g, x, y, x + w, y + h, if (hover > 0.04f) withAlpha(accent, 0xAA) else BORDER)
+        g.fill(x, y, x + w, y + 1, 0x28FFFFFF)
+
+        val iconCol = 54
+        g.fill(x, y, x + iconCol, y + h, withAlpha(accent, 0x14))
+        g.fill(x, y, x + 3, y + h, accent)
+        drawHeroIcon(g, x + (iconCol - 26) / 2, y + (h - 26) / 2, 26, icon, accent, hover)
+
+        val tx = x + iconCol + 12
+        val ty = y + h / 2 - (if (subtitle != null) 8 else 4)
+        g.drawString(font, title, tx, ty, if (hover > 0.04f) accent else TEXT, false)
+        subtitle?.let { g.drawString(font, it, tx, ty + 12, MUTED, false) }
+
+        val barW = ((w - iconCol) * hover).toInt().coerceAtLeast(if (hover > 0.04f) 24 else 0)
+        if (barW > 0) {
+            g.fillGradient(x + iconCol, y + h - 2, x + iconCol + barW, y + h, accent, withAlpha(accent, 0x44))
+        }
+
+        if (hover > 0.15f) {
+            g.drawString(font, ">", x + w - 14, y + h / 2 - 4, accent, false)
+        }
+    }
+
+    private fun drawHeroIcon(g: GuiGraphics, x: Int, y: Int, size: Int, icon: HeroIcon, accent: Int, hover: Float) {
+        g.fill(x - 1, y - 1, x + size + 1, y + size + 1, withAlpha(accent, if (hover > 0.04f) 0x55 else 0x33))
+        g.fill(x, y, x + size, y + size, 0xFF0A0C10.toInt())
+        outline(g, x, y, x + size, y + size, withAlpha(accent, 0x88))
+        val s = size / 2
+        val cx = x + s
+        val cy = y + s
+        when (icon) {
+            HeroIcon.WORLD -> {
+                g.fill(x + 4, y + 4, x + size - 4, y + s, 0xFF3DDC84.toInt())
+                g.fill(x + 4, y + s, x + size - 4, y + size - 4, 0xFF8B6914.toInt())
+            }
+            HeroIcon.SERVERS -> {
+                g.fill(cx - 3, cy - 7, cx + 3, cy - 1, accent)
+                g.fill(cx - 7, cy + 1, cx - 1, cy + 7, accent)
+                g.fill(cx + 1, cy + 1, cx + 7, cy + 7, accent)
+                g.fill(cx - 1, cy - 1, cx + 1, cy + 1, 0xFF0A0C10.toInt())
+            }
+            HeroIcon.PLAY -> {
+                g.fill(cx - 2, cy - 6, cx + 6, cy, accent)
+                g.fill(cx - 2, cy, cx + 6, cy + 6, withAlpha(accent, 0x88))
+            }
+            HeroIcon.CREATE -> {
+                g.fill(cx - 1, cy - 6, cx + 1, cy + 6, accent)
+                g.fill(cx - 6, cy - 1, cx + 6, cy + 1, accent)
+            }
+            HeroIcon.MANAGE -> {
+                g.fill(x + 5, y + 8, x + size - 5, y + 10, accent)
+                g.fill(x + 5, y + 14, x + size - 5, y + 16, withAlpha(accent, 0xAA))
+                g.fill(x + 5, y + 20, x + size - 5, y + 22, withAlpha(accent, 0x66))
+            }
+        }
+    }
+
+    /** Compact secondary row for Realms / ClickGUI / Mods. */
+    fun menuRow(
+        g: GuiGraphics,
+        font: Font,
+        x: Int, y: Int, w: Int, h: Int,
+        title: String,
+        subtitle: String?,
+        accent: Int,
+        hover: Float,
+        primary: Boolean = false,
+    ) {
+        g.fillGradient(x, y, x + w, y + h, 0xFF141820.toInt(), 0xFF0E1016.toInt())
+        if (hover > 0.05f) g.fill(x, y, x + w, y + h, withAlpha(accent, 0x18))
+        outline(g, x, y, x + w, y + h, if (hover > 0.05f) withAlpha(accent, 0x99) else BORDER)
+        g.fill(x, y, x + 3, y + h, accent)
+        g.fill(x, y, x + w, y + 1, 0x22FFFFFF)
+        g.drawString(font, title, x + 14, y + 10, if (hover > 0.05f) accent else TEXT, false)
+        subtitle?.let {
+            if (h >= 44) g.drawString(font, it, x + 14, y + 22, MUTED, false)
+        }
+        if (hover > 0.05f) {
+            g.drawString(font, ">", x + w - 16, y + h / 2 - 4, accent, false)
+        }
+    }
+
+    fun barButton(
+        g: GuiGraphics,
+        font: Font,
+        x: Int, y: Int, w: Int, h: Int,
+        label: String,
+        hovered: Boolean,
+        danger: Boolean = false,
+    ) {
+        val accent = if (danger) 0xFFFF4466.toInt() else ACCENT
+        g.fill(x, y, x + w, y + h, if (hovered) 0xFF1A2230.toInt() else 0xFF131521.toInt())
+        outline(g, x, y, x + w, y + h, if (hovered) withAlpha(accent, 0x88) else BORDER)
+        g.drawCenteredString(font, label, x + w / 2, y + h / 2 - 4, if (hovered) accent else TEXT)
+    }
 }

@@ -35,8 +35,14 @@ public class MixinLevelRenderer {
 
         float partialTick = deltaTracker.getGameTimeDeltaPartialTick(true);
         PoseStack poseStack = new PoseStack();
+        poseStack.mulPose(camera.rotation());
+        org.joml.Matrix4f modelViewRotationOnly = new org.joml.Matrix4f(poseStack.last().pose());
         
+        // Save matrices globally in RenderUtil for backward-compatible rendering modules
+        com.aquaticaces.module.impl.render.RenderUtil.activeProj = projectionMatrix;
+        com.aquaticaces.module.impl.render.RenderUtil.activeModelView = modelViewRotationOnly;
+
         // Post EventRender3D for custom 3D visuals
-        AquaticAces.INSTANCE.getEventBus().post(new EventRender3D(poseStack, partialTick));
+        AquaticAces.INSTANCE.getEventBus().post(new EventRender3D(poseStack, projectionMatrix, modelViewRotationOnly, partialTick));
     }
 }

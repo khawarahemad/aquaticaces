@@ -7,11 +7,11 @@ import net.minecraft.world.effect.MobEffects
 class Fullbright : Module("Fullbright", "Maximum brightness without XRay.", Category.RENDER) {
     override fun onEnable() {
         super.onEnable()
-        mc.options.gamma().set(16.0)
+        mc.levelRenderer.allChanged()
     }
 
     override fun onDisable() {
         super.onDisable()
-        mc.options.gamma().set(1.0)
+        mc.levelRenderer.allChanged()
     }
 }

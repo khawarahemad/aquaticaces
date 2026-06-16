@@ -13,7 +13,7 @@ class EventClientTick(val phase: Phase) : Event() {
     override fun isCancellable(): Boolean = false
 }
 
-class EventRender3D(val poseStack: PoseStack, val partialTick: Float) : Event() {
+class EventRender3D(val poseStack: PoseStack, val projectionMatrix: org.joml.Matrix4f, val modelViewMatrix: org.joml.Matrix4f, val partialTick: Float) : Event() {
     override fun isCancellable(): Boolean = false
 }
 

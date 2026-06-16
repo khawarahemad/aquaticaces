@@ -61,7 +61,9 @@ class XRay : Module("XRay", "Reveals selected blocks through solid stone.", Cate
         @JvmStatic
         fun useFullBright(): Boolean {
             val module = com.aquaticaces.module.ModuleManager.getModuleByName("XRay") as? XRay
-            return module != null && module.isEnabled && module.fullBright.value
+            val xrayFb = module != null && module.isEnabled && module.fullBright.value
+            val fb = com.aquaticaces.module.ModuleManager.getModuleByName("Fullbright")?.isEnabled == true
+            return xrayFb || fb
         }
 
         @JvmStatic

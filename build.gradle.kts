@@ -1,4 +1,6 @@
 import proguard.gradle.ProGuardTask
+import java.net.URLClassLoader
+import java.lang.reflect.Method
 
 buildscript {
     repositories {
@@ -17,7 +19,7 @@ plugins {
     id("fabric-loom") version "1.10.5"
 }
 
-version = "1.4.1"
+version = "1.4.2"
 group = "com.aquaticaces"
 
 base {

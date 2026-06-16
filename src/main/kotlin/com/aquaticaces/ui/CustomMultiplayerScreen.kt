@@ -307,6 +307,36 @@ class CustomMultiplayerScreen(private val parent: Screen?) : Screen(Component.li
         if (modal != Modal.NONE) {
             if (buttons["modalOk"]?.has(mouseX, mouseY) == true) { confirmModal(); return true }
             if (buttons["modalCancel"]?.has(mouseX, mouseY) == true) { closeModal(); return true }
+            
+            // Custom field focus click handling
+            val twoFields = modal == Modal.ADD || modal == Modal.EDIT
+            val modalW = 260f
+            val modalH = if (twoFields) 150f else 110f
+            val mx = width / 2f - modalW / 2f
+            val my = height / 2f - modalH / 2f
+            var fieldY = my + 34f
+            
+            if (twoFields) {
+                if (mouseX >= mx + 18 && mouseX <= mx + modalW - 18 && mouseY >= fieldY + 10 && mouseY <= fieldY + 28) {
+                    nameInput.isFocused = true
+                    ipInput.isFocused = false
+                    setFocused(nameInput)
+                    return true
+                }
+                fieldY += 38f
+                if (mouseX >= mx + 18 && mouseX <= mx + modalW - 18 && mouseY >= fieldY + 10 && mouseY <= fieldY + 28) {
+                    nameInput.isFocused = false
+                    ipInput.isFocused = true
+                    setFocused(ipInput)
+                    return true
+                }
+            } else {
+                if (mouseX >= mx + 18 && mouseX <= mx + modalW - 18 && mouseY >= fieldY + 10 && mouseY <= fieldY + 28) {
+                    ipInput.isFocused = true
+                    setFocused(ipInput)
+                    return true
+                }
+            }
             return super.mouseClicked(mouseX, mouseY, button)
         }
         cardRects.forEachIndexed { index, rect ->
@@ -350,13 +380,21 @@ class CustomMultiplayerScreen(private val parent: Screen?) : Screen(Component.li
             val d = cards[selectedIndex].data
             nameInput.value = d.name; ipInput.value = d.ip
         }
-        nameInput.isFocused = m == Modal.ADD || m == Modal.EDIT
-        ipInput.isFocused = m == Modal.DIRECT
+        if (m == Modal.ADD || m == Modal.EDIT) {
+            nameInput.isFocused = true
+            ipInput.isFocused = false
+            setFocused(nameInput)
+        } else if (m == Modal.DIRECT) {
+            nameInput.isFocused = false
+            ipInput.isFocused = true
+            setFocused(ipInput)
+        }
     }
 
     private fun closeModal() {
         modal = Modal.NONE; nameInput.visible = false; ipInput.visible = false
         nameInput.value = ""; ipInput.value = ""
+        setFocused(null)
     }
 
     private fun confirmModal() {
@@ -390,6 +428,20 @@ class CustomMultiplayerScreen(private val parent: Screen?) : Screen(Component.li
         if (modal != Modal.NONE) {
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) { confirmModal(); return true }
             if (keyCode == GLFW.GLFW_KEY_ESCAPE) { closeModal(); return true }
+            if (keyCode == GLFW.GLFW_KEY_TAB) {
+                if (modal == Modal.ADD || modal == Modal.EDIT) {
+                    if (nameInput.isFocused) {
+                        nameInput.isFocused = false
+                        ipInput.isFocused = true
+                        setFocused(ipInput)
+                    } else {
+                        nameInput.isFocused = true
+                        ipInput.isFocused = false
+                        setFocused(nameInput)
+                    }
+                    return true
+                }
+            }
             return super.keyPressed(keyCode, scanCode, modifiers)
         }
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) { minecraft!!.setScreen(parent ?: MainMenuScreen()); return true }

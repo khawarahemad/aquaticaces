@@ -4,112 +4,115 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 
+/** Full-screen singleplayer hub — matches main menu / multiplayer layout. */
 class CustomSingleplayerScreen(private val parent: Screen?) : Screen(Component.literal("Singleplayer")) {
 
-    private data class ActionCard(
+    private data class Rect(val x: Float, val y: Float, val w: Float, val h: Float) {
+        fun hit(mx: Double, my: Double) = mx >= x && mx <= x + w && my >= y && my <= y + h
+    }
+
+    private data class Action(
         val title: String,
         val subtitle: String,
+        val accent: Int = UiStyle.ACCENT,
+        val icon: UiStyle.HeroIcon,
         val action: () -> Unit,
-        val primary: Boolean = false,
-        var x: Int = 0,
-        var y: Int = 0,
-        var w: Int = 0,
-        var h: Int = 0,
-        var hover: Float = 0f
-    )
+    ) {
+        var hover = 0f
+        var rect = Rect(0f, 0f, 0f, 0f)
+    }
 
-    private val actions = mutableListOf<ActionCard>()
+    private val actions = mutableListOf<Action>()
+    private var backRect = Rect(0f, 0f, 0f, 0f)
     private var menuTick = 0f
 
     override fun init() {
         actions.clear()
-        actions.add(ActionCard("Play a World", "Open your saved worlds and jump back in.", action = {
+        actions.add(Action(
+            "Play a World", "Open your saved worlds and jump back in",
+            icon = UiStyle.HeroIcon.PLAY
+        ) {
             minecraft?.setScreen(CustomWorldSelectScreen(this))
-        }, primary = true))
-        actions.add(ActionCard("Create New World", "Generate a fresh world with custom settings.", action = {
+        })
+        actions.add(Action(
+            "Create New World", "Generate a fresh world with custom settings",
+            accent = UiStyle.PURPLE, icon = UiStyle.HeroIcon.CREATE
+        ) {
             minecraft?.setScreen(CustomCreateWorldScreen(this))
-        }))
-        actions.add(ActionCard("Manage Worlds", "Play, create or delete your existing worlds.", action = {
+        })
+        actions.add(Action(
+            "Manage Worlds", "Play, create or delete your existing worlds",
+            icon = UiStyle.HeroIcon.MANAGE
+        ) {
             minecraft?.setScreen(CustomWorldSelectScreen(this))
-        }))
-        actions.add(ActionCard("Back", "Return to the Aquatic Aces main menu.", action = {
-            minecraft?.setScreen(parent ?: MainMenuScreen())
-        }))
+        })
     }
 
-    override fun tick() { menuTick += 1f }
-
-    override fun render(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val font = minecraft!!.font
-        val t = menuTick + partialTick
-        UiStyle.backdrop(guiGraphics, width, height, t)
-
-        val n = actions.size
-        val headerH = 82
-        val cardW = (width - 80).coerceIn(220, 360)
-
-        // fit the action cards to the available height
-        var ch = 48
-        var gap = 10
-        var totalH = headerH + n * (ch + gap)
-        if (totalH + 28 > height) {
-            val avail = (height - 28 - headerH).coerceAtLeast(120)
-            val per = (avail / n).coerceAtLeast(26)
-            ch = (per - 6).coerceIn(28, 48)
-            gap = (per - ch).coerceIn(4, 10)
-            totalH = headerH + n * (ch + gap)
-        }
-
-        val cardX = width / 2 - cardW / 2
-        val cardTopY = ((height - totalH) / 2).coerceAtLeast(14)
-
-        UiStyle.card(guiGraphics, cardX - 14, cardTopY - 16, cardX + cardW + 14, cardTopY + totalH + 2)
-
-        val centerX = width / 2
-        UiStyle.logoMark(guiGraphics, centerX, cardTopY - 4, 28)
-        guiGraphics.drawCenteredString(font, "SINGLEPLAYER", centerX, cardTopY + 30, UiStyle.ACCENT)
-        guiGraphics.drawCenteredString(font, "World management hub", centerX, cardTopY + 42, UiStyle.MUTED)
-
-        val startY = cardTopY + headerH
-        actions.forEachIndexed { index, card ->
-            card.x = cardX
-            card.y = startY + index * (ch + gap)
-            card.w = cardW
-            card.h = ch
-            val hovered = mouseX >= card.x && mouseX <= card.x + card.w && mouseY >= card.y && mouseY <= card.y + card.h
-            card.hover += ((if (hovered) 1f else 0f) - card.hover) * 0.25f
-            drawCard(guiGraphics, card)
-        }
+    override fun tick() {
+        menuTick += 1f
     }
 
-    private fun drawCard(g: GuiGraphics, card: ActionCard) {
+    override fun render(g: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
         val font = minecraft!!.font
-        val hover = card.hover
-        val accent = if (card.primary) UiStyle.ACCENT else UiStyle.PURPLE
-        val bg = UiStyle.withAlpha(0x10131A, (0xCC + hover * 0x33).toInt().coerceAtMost(0xFF))
-        g.fill(card.x, card.y, card.x + card.w, card.y + card.h, bg)
-        if (hover > 0.05f) g.fill(card.x, card.y, card.x + card.w, card.y + card.h, UiStyle.withAlpha(accent, (hover * 0x1A).toInt()))
-        UiStyle.outline(g, card.x, card.y, card.x + card.w, card.y + card.h, if (hover > 0.05f) UiStyle.withAlpha(accent, 0x99) else UiStyle.BORDER)
-        val barW = (3 + hover * 3f).toInt()
-        g.fill(card.x, card.y, card.x + barW, card.y + card.h, accent)
+        val gw = width.toFloat()
+        val gh = height.toFloat()
 
-        val titleY = card.y + 8
-        val subY = card.y + card.h - 13
-        g.drawString(font, card.title, card.x + 16, titleY, if (hover > 0.05f) accent else UiStyle.TEXT, false)
-        if (subY > titleY + 9) {
-            g.drawString(font, card.subtitle, card.x + 16, subY, UiStyle.MUTED, false)
+        UiStyle.backdrop(g, width, height, menuTick + partialTick)
+        UiStyle.screenHeader(g, font, width, "SINGLEPLAYER", "World management hub")
+
+        layoutRows(gw, gh)
+        for (action in actions) {
+            val hovered = action.rect.hit(mouseX.toDouble(), mouseY.toDouble())
+            action.hover += ((if (hovered) 1f else 0f) - action.hover) * 0.2f
+            val r = action.rect
+            UiStyle.heroTile(
+                g, font,
+                r.x.toInt(), r.y.toInt(), r.w.toInt(), r.h.toInt(),
+                action.title, action.subtitle, action.accent, action.hover, action.icon
+            )
         }
-        val cxr = card.x + card.w - 18
-        val cyr = card.y + card.h / 2
-        g.drawString(font, ">", cxr, cyr - 4, if (hover > 0.05f) accent else UiStyle.DIM, false)
+
+        UiStyle.footerStrip(g, width, height)
+        val backHovered = backRect.hit(mouseX.toDouble(), mouseY.toDouble())
+        UiStyle.barButton(
+            g, font,
+            backRect.x.toInt(), backRect.y.toInt(), backRect.w.toInt(), backRect.h.toInt(),
+            "Back", backHovered
+        )
+    }
+
+    private fun layoutRows(gw: Float, gh: Float) {
+        val pad = UiStyle.SCREEN_PAD.toFloat()
+        val contentW = gw - pad * 2f
+        val gap = 10f
+        val y0 = UiStyle.HEADER_H + 16f
+        val maxBottom = gh - UiStyle.FOOTER_H
+        val available = maxBottom - y0
+
+        val rowCount = actions.size
+        var rowH = ((available - gap * (rowCount - 1)) / rowCount).coerceIn(68f, 80f)
+        if (rowH * rowCount + gap * (rowCount - 1) > available) {
+            rowH = (available - gap * (rowCount - 1)) / rowCount
+        }
+
+        var y = y0
+        for (action in actions) {
+            action.rect = Rect(pad, y, contentW, rowH)
+            y += rowH + gap
+        }
+
+        backRect = Rect(pad, gh - UiStyle.FOOTER_H + 8f, 72f, 24f)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (button == 0) {
-            actions.firstOrNull {
-                mouseX >= it.x && mouseX <= it.x + it.w && mouseY >= it.y && mouseY <= it.y + it.h
-            }?.let {
-                it.action()
+        if (button != 0) return super.mouseClicked(mouseX, mouseY, button)
+        if (backRect.hit(mouseX, mouseY)) {
+            minecraft?.setScreen(parent ?: MainMenuScreen())
+            return true
+        }
+        for (action in actions) {
+            if (action.rect.hit(mouseX, mouseY)) {
+                action.action()
                 return true
             }
         }
@@ -121,4 +124,6 @@ class CustomSingleplayerScreen(private val parent: Screen?) : Screen(Component.l
     override fun onClose() {
         minecraft?.setScreen(parent ?: MainMenuScreen())
     }
+
+    override fun renderBackground(g: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {}
 }

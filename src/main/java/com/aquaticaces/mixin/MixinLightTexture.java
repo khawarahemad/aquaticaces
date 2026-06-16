@@ -24,20 +24,23 @@ public class MixinLightTexture {
         return (15 << 4) | (15 << 20);
     }
 
-    @Inject(method = "updateLightTexture", at = @At("HEAD"), cancellable = true)
+    @Inject(
+        method = "updateLightTexture",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/renderer/texture/DynamicTexture;upload()V"
+        )
+    )
     private void aquaticaces$xrayFullBright(float partialTicks, CallbackInfo ci) {
         if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
         if (!XRay.useFullBright()) return;
 
         if (lightPixels != null) {
-            int pixel = fullLightPixel();
             for (int x = 0; x < 16; x++) {
                 for (int y = 0; y < 16; y++) {
-                    lightPixels.setPixelRGBA(x, y, pixel);
+                    lightPixels.setPixelRGBA(x, y, 0xFFFFFFFF);
                 }
             }
-            lightTexture.upload();
-            ci.cancel();
         }
     }
 }
