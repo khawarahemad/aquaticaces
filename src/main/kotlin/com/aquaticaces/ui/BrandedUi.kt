@@ -1,69 +1,20 @@
 package com.aquaticaces.ui
 
-import com.mojang.blaze3d.platform.NativeImage
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.resources.ResourceLocation
 
 object BrandedUi {
     private val RAW_LOGO: ResourceLocation = ResourceLocation.fromNamespaceAndPath("aquaticaces", "textures/gui/logo.png")
-    private val CLEAN_LOGO: ResourceLocation = ResourceLocation.fromNamespaceAndPath("aquaticaces", "branded_logo_clean")
-
-    private var cleanLogo: ResourceLocation? = null
-    private var prepareFailed = false
 
     private const val ACCENT = 0xFF00C6FF.toInt()
     private const val MUTED = 0xFF7A8A9A.toInt()
     private const val DIM = 0xFF556677.toInt()
 
-    /** Strip solid / light / blue PNG backgrounds; keep original logo colors. */
-    private fun ensureCleanLogo(): ResourceLocation? {
-        cleanLogo?.let { return it }
-        if (prepareFailed) return RAW_LOGO
-        try {
-            val mc = Minecraft.getInstance()
-            val resource = mc.resourceManager.getResource(RAW_LOGO).orElse(null) ?: return null
-            val image = resource.open().use { NativeImage.read(it) }
-            for (y in 0 until image.height) {
-                for (x in 0 until image.width) {
-                    val px = image.getPixelRGBA(x, y)
-                    val a = (px ushr 24) and 0xFF
-                    val r = px and 0xFF
-                    val g = (px ushr 8) and 0xFF
-                    val b = (px ushr 16) and 0xFF
-                    if (isBackground(r, g, b, a)) {
-                        image.setPixelRGBA(x, y, 0)
-                    } else {
-                        image.setPixelRGBA(x, y, (a shl 24) or (r shl 16) or (g shl 8) or b)
-                    }
-                }
-            }
-            mc.textureManager.register(CLEAN_LOGO, DynamicTexture(image))
-            cleanLogo = CLEAN_LOGO
-            return cleanLogo
-        } catch (_: Throwable) {
-            prepareFailed = true
-            return RAW_LOGO
-        }
-    }
-
-    private fun isBackground(r: Int, g: Int, b: Int, a: Int): Boolean {
-        if (a < 20) return true
-        if (r > 225 && g > 225 && b > 225) return true
-        val lum = 0.299 * r + 0.587 * g + 0.114 * b
-        if (lum > 240) return true
-        // cyan / blue squares from the source PNG
-        if (b > 160 && b > r + 25 && b > g + 15) return true
-        return false
-    }
-
     fun drawLogo(g: GuiGraphics, centerX: Int, y: Int, size: Int = 64) {
-        val logo = ensureCleanLogo() ?: return
         try {
             g.setColor(1f, 1f, 1f, 1f)
-            g.blit(logo, centerX - size / 2, y, 0f, 0f, size, size, size, size)
+            g.blit(RAW_LOGO, centerX - size / 2, y, 0f, 0f, size, size, size, size)
         } catch (_: Exception) {}
     }
 
