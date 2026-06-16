@@ -18,72 +18,71 @@ class HudToggleScreen(private val parent: Screen?) : Screen(Component.literal("H
         HudEntry("coordinates", "Coordinates", { HudSettings.toggles.coordinates }) { HudSettings.toggles.coordinates = it }
     )
 
+    private var menuTick = 0f
+
+    override fun tick() { menuTick += 1f }
+
     override fun render(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val vector = ClickGUI.vectorRenderer
-        val font = ClickGUI.fontRenderer
-        val guiW = minecraft!!.window.guiScaledWidth.toFloat()
-        val guiH = minecraft!!.window.guiScaledHeight.toFloat()
-        val scale = minecraft!!.window.guiScale.toFloat()
+        val font = minecraft!!.font
+        guiGraphics.fillGradient(0, 0, width, height, 0xCC06070B.toInt(), 0xDD0D0E14.toInt())
+        UiStyle.grid(guiGraphics, width, height)
 
-        vector.begin(guiW, guiH, scale)
-        vector.drawRoundedRect(0f, 0f, guiW, guiH, 0f, 0x99000000.toInt())
+        val panelW = 240
+        val panelH = 40 + entries.size * 24 + 40
+        val px = width / 2 - panelW / 2
+        val py = height / 2 - panelH / 2
+        UiStyle.card(guiGraphics, px, py, px + panelW, py + panelH)
 
-        val panelW = 220f
-        val panelH = 200f
-        val px = guiW / 2f - panelW / 2f
-        val py = guiH / 2f - panelH / 2f
-        vector.drawRoundedRect(px, py, panelW, panelH, 8f, 0xEE13141B.toInt())
-        vector.drawMultiPassOutline(px, py, panelW, panelH, 8f, 1.2f, 0xFF2A2E3D.toInt(), 0x3300C6FF)
+        UiStyle.logoMark(guiGraphics, width / 2, py + 12, 22)
+        guiGraphics.drawCenteredString(font, "HUD SETTINGS", width / 2, py + 38, UiStyle.ACCENT)
 
-        font.drawString("outfit", "HUD Settings", px + 12f, py + 10f, 13f, 0xFFFFFFFF.toInt())
-        font.drawString("outfit", "Click to toggle elements", px + 12f, py + 24f, 8f, 0xFF888888.toInt())
-
-        var rowY = py + 40f
+        var rowY = py + 54
         for (entry in entries) {
             val enabled = entry.getter()
-            val hovered = mouseX >= px + 10 && mouseX <= px + panelW - 10 && mouseY >= rowY && mouseY <= rowY + 18
-            val bg = when {
-                enabled && hovered -> 0x4400C6FF
-                enabled -> 0x2200C6FF
-                hovered -> 0x332A2E3D
-                else -> 0x221A1C23
-            }
-            vector.drawRoundedRect(px + 10f, rowY, panelW - 20f, 18f, 4f, bg)
-            font.drawString("outfit", entry.label, px + 18f, rowY + 4f, 10f, if (enabled) 0xFFFFFFFF.toInt() else 0xFF666666.toInt())
-            font.drawString("outfit", if (enabled) "ON" else "OFF", px + panelW - 38f, rowY + 4f, 9f, if (enabled) 0xFF00FF88.toInt() else 0xFFFF6666.toInt())
-            rowY += 22f
+            val rx = px + 12
+            val rw = panelW - 24
+            val hovered = mouseX >= rx && mouseX <= rx + rw && mouseY >= rowY && mouseY <= rowY + 18
+            val bg = if (enabled) UiStyle.withAlpha(UiStyle.ACCENT, if (hovered) 0x33 else 0x22) else if (hovered) 0x22FFFFFF else 0x33000000
+            guiGraphics.fill(rx, rowY, rx + rw, rowY + 18, bg)
+            UiStyle.outline(guiGraphics, rx, rowY, rx + rw, rowY + 18, if (enabled) UiStyle.withAlpha(UiStyle.ACCENT, 0x88) else UiStyle.BORDER)
+            guiGraphics.drawString(font, entry.label, rx + 8, rowY + 5, if (enabled) UiStyle.TEXT else UiStyle.MUTED, false)
+            val pill = if (enabled) "ON" else "OFF"
+            guiGraphics.drawString(font, pill, rx + rw - 8 - font.width(pill), rowY + 5, if (enabled) UiStyle.SUCCESS else UiStyle.DIM, false)
+            rowY += 24
         }
 
-        val editY = py + panelH - 32f
-        val editHovered = mouseX >= px + 10 && mouseX <= px + panelW - 10 && mouseY >= editY && mouseY <= editY + 22
-        vector.drawRoundedRect(px + 10f, editY, panelW - 20f, 22f, 4f, if (editHovered) 0x440072FF else 0x330072FF)
-        font.drawString("outfit", "Edit Positions...", px + 18f, editY + 6f, 10f, 0xFF00C6FF.toInt())
+        val editY = py + panelH - 30
+        val ex = px + 12
+        val ew = panelW - 24
+        val editHovered = mouseX >= ex && mouseX <= ex + ew && mouseY >= editY && mouseY <= editY + 20
+        if (editHovered) guiGraphics.fill(ex - 2, editY - 2, ex + ew + 2, editY + 22, UiStyle.withAlpha(UiStyle.ACCENT, 0x55))
+        guiGraphics.fillGradient(ex, editY, ex + ew, editY + 20, UiStyle.ACCENT, UiStyle.ACCENT_2)
+        guiGraphics.drawCenteredString(font, "Edit Positions...", width / 2, editY + 6, 0xFFFFFFFF.toInt())
 
-        vector.end()
         super.render(guiGraphics, mouseX, mouseY, partialTick)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         if (button != 0) return super.mouseClicked(mouseX, mouseY, button)
-        val guiW = minecraft!!.window.guiScaledWidth.toFloat()
-        val guiH = minecraft!!.window.guiScaledHeight.toFloat()
-        val panelW = 220f
-        val panelH = 200f
-        val px = guiW / 2f - panelW / 2f
-        val py = guiH / 2f - panelH / 2f
+        val panelW = 240
+        val panelH = 40 + entries.size * 24 + 40
+        val px = width / 2 - panelW / 2
+        val py = height / 2 - panelH / 2
+        val rx = px + 12
+        val rw = panelW - 24
 
-        var rowY = py + 40f
+        var rowY = py + 54
         for (entry in entries) {
-            if (mouseX >= px + 10 && mouseX <= px + panelW - 10 && mouseY >= rowY && mouseY <= rowY + 18) {
+            if (mouseX >= rx && mouseX <= rx + rw && mouseY >= rowY && mouseY <= rowY + 18) {
                 entry.setter(!entry.getter())
                 HudSettings.save()
                 return true
             }
-            rowY += 22f
+            rowY += 24
         }
 
-        val editY = py + panelH - 32f
-        if (mouseX >= px + 10 && mouseX <= px + panelW - 10 && mouseY >= editY && mouseY <= editY + 22) {
+        val editY = py + panelH - 30
+        if (mouseX >= rx && mouseX <= rx + rw && mouseY >= editY && mouseY <= editY + 20) {
             minecraft!!.setScreen(HudEditorScreen(this))
             return true
         }

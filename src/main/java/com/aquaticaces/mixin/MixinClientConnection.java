@@ -1,6 +1,7 @@
 package com.aquaticaces.mixin;
 
 import com.aquaticaces.AquaticAces;
+import com.aquaticaces.accessor.ServerboundInteractPacketAccess;
 import com.aquaticaces.event.impl.EventAttack;
 import com.aquaticaces.event.impl.EventPacketReceive;
 import com.aquaticaces.event.impl.EventPacketSend;

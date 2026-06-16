@@ -1,5 +1,6 @@
 package com.aquaticaces.mixin;
 
+import com.aquaticaces.accessor.ServerboundInteractPacketAccess;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;

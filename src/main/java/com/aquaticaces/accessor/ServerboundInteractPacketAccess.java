@@ -1,4 +1,4 @@
-package com.aquaticaces.mixin;
+package com.aquaticaces.accessor;
 
 public interface ServerboundInteractPacketAccess {
     int aquaticaces_getEntityId();

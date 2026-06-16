@@ -4,13 +4,14 @@ import com.aquaticaces.core.HudLayout
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
+import com.aquaticaces.ui.UiStyle.withAlpha
 
 class HudEditorScreen(private val parent: Screen?) : Screen(Component.literal("HUD Editor")) {
 
     private enum class DragTarget(val label: String, val width: Float, val height: Float) {
-        TARGET("Target HUD", 150f, 42f),
-        STATS("Stats HUD", 160f, 55f),
-        ARRAYLIST("ArrayList", 120f, 80f);
+        TARGET("Target HUD", 150f, 22f),
+        STATS("Stats HUD", 120f, 12f),
+        ARRAYLIST("ArrayList", 90f, 60f);
 
         fun x(screenW: Float): Float = when (this) {
             TARGET -> HudLayout.resolveX(HudLayout.positions.targetHudX, screenW)
@@ -48,41 +49,41 @@ class HudEditorScreen(private val parent: Screen?) : Screen(Component.literal("H
     private var dragging: DragTarget? = null
 
     override fun render(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val vector = ClickGUI.vectorRenderer
-        val font = ClickGUI.fontRenderer
-        val scale = minecraft!!.window.guiScale.toFloat()
-        val guiW = minecraft!!.window.guiScaledWidth.toFloat()
-        val guiH = minecraft!!.window.guiScaledHeight.toFloat()
+        val font = minecraft!!.font
+        val guiW = width.toFloat()
+        val guiH = height.toFloat()
 
-        vector.begin(guiW, guiH, scale)
+        guiGraphics.fill(0, 0, width, height, 0xCC06070B.toInt())
+        UiStyle.grid(guiGraphics, width, height)
 
-        vector.drawRoundedRect(0f, 0f, guiW, guiH, 0f, 0x88000000.toInt())
-        font.drawString("outfit", "HUD Editor — drag elements, ESC to save & close", 12f, 10f, 12f, 0xFFFFFFFF.toInt())
-        font.drawString("outfit", "Target / Stats / ArrayList anchors", 12f, 24f, 9f, 0xFFAAAAAA.toInt())
+        guiGraphics.drawString(font, "HUD Editor", 12, 10, UiStyle.ACCENT, true)
+        guiGraphics.drawString(font, "Drag elements to reposition  ·  ESC to save & close", 12, 22, UiStyle.MUTED, true)
 
         if (dragging != null) {
             dragging!!.setPosition(guiW, guiH, mouseX.toFloat(), mouseY.toFloat())
         }
 
         for (target in DragTarget.entries) {
-            val x = target.x(guiW)
-            val y = target.y(guiH)
-            val hovered = mouseX >= x && mouseX <= x + target.width && mouseY >= y && mouseY <= y + target.height
-            val border = if (dragging == target || hovered) 0xFF00C6FF.toInt() else 0xFF666688.toInt()
-            val fill = if (dragging == target) 0x4400C6FF else 0x3313141B
-            vector.drawRoundedRect(x, y, target.width, target.height, 6f, fill)
-            vector.drawMultiPassOutline(x, y, target.width, target.height, 6f, 1.2f, border, 0x2200C6FF)
-            font.drawString("outfit", target.label, x + 8f, y + 8f, 10f, 0xFFFFFFFF.toInt())
+            val x = target.x(guiW).toInt()
+            val y = target.y(guiH).toInt()
+            val w = target.width.toInt()
+            val h = target.height.toInt()
+            val hovered = mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h
+            val active = dragging == target || hovered
+            val border = if (active) UiStyle.ACCENT else UiStyle.BORDER
+            guiGraphics.fill(x, y, x + w, y + h, if (dragging == target) withAlpha(UiStyle.ACCENT, 0x33) else 0x66131521)
+            UiStyle.outline(guiGraphics, x, y, x + w, y + h, border)
+            guiGraphics.fill(x, y, x + w, y + 1, UiStyle.ACCENT)
+            guiGraphics.drawString(font, target.label, x + 5, y + 3, if (active) UiStyle.TEXT else UiStyle.MUTED, true)
         }
 
-        vector.end()
         super.render(guiGraphics, mouseX, mouseY, partialTick)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         if (button != 0) return super.mouseClicked(mouseX, mouseY, button)
-        val guiW = minecraft!!.window.guiScaledWidth.toFloat()
-        val guiH = minecraft!!.window.guiScaledHeight.toFloat()
+        val guiW = width.toFloat()
+        val guiH = height.toFloat()
         dragging = DragTarget.entries.firstOrNull { target ->
             val x = target.x(guiW)
             val y = target.y(guiH)

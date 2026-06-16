@@ -1,23 +1,20 @@
 package com.aquaticaces.mixin;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.gui.screens.PauseScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(TitleScreen.class)
-public class MixinTitleScreen {
+@Mixin(PauseScreen.class)
+public class MixinPauseScreen {
 
-    /**
-     * Replace the vanilla title screen after it finishes init.
-     * Cancelling init early leaves the panorama visible with no buttons.
-     */
     @Inject(method = "init", at = @At("RETURN"))
     private void onInitReturn(CallbackInfo ci) {
         if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
 
-        Minecraft.getInstance().setScreen(new com.aquaticaces.ui.MainMenuScreen());
+        Minecraft mc = Minecraft.getInstance();
+        mc.setScreen(new com.aquaticaces.ui.CustomPauseScreen(mc.screen));
     }
 }

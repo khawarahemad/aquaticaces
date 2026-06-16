@@ -13,7 +13,8 @@ public class MixinClipContext {
         method = "<init>(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/level/ClipContext$Block;Lnet/minecraft/world/level/ClipContext$Fluid;Lnet/minecraft/world/entity/Entity;)V",
         at = @At("HEAD"),
         argsOnly = true,
-        ordinal = 3
+        ordinal = 0,
+        require = 0
     )
     private static ClipContext.Fluid aquaticaces$modifyFluidForEntity(ClipContext.Fluid fluid) {
         return aquaticaces$overrideFluid(fluid);
@@ -23,7 +24,8 @@ public class MixinClipContext {
         method = "<init>(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/level/ClipContext$Block;Lnet/minecraft/world/level/ClipContext$Fluid;Lnet/minecraft/world/phys/shapes/CollisionContext;)V",
         at = @At("HEAD"),
         argsOnly = true,
-        ordinal = 3
+        ordinal = 0,
+        require = 0
     )
     private static ClipContext.Fluid aquaticaces$modifyFluidForCollision(ClipContext.Fluid fluid) {
         return aquaticaces$overrideFluid(fluid);

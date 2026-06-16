@@ -7,13 +7,7 @@ import com.aquaticaces.module.Category
 import com.aquaticaces.module.Module
 import com.aquaticaces.module.setting.ColorSetting
 import com.aquaticaces.module.setting.NumberSetting
-import com.mojang.blaze3d.systems.RenderSystem
-import com.mojang.blaze3d.vertex.BufferUploader
-import com.mojang.blaze3d.vertex.DefaultVertexFormat
-import com.mojang.blaze3d.vertex.Tesselator
-import com.mojang.blaze3d.vertex.VertexFormat
 import net.minecraft.world.phys.Vec3
-import org.lwjgl.opengl.GL11
 import java.util.ArrayDeque
 
 class Breadcrumbs : Module("Breadcrumbs", "Draws a trail of recent positions.", Category.RENDER) {
@@ -37,31 +31,29 @@ class Breadcrumbs : Module("Breadcrumbs", "Draws a trail of recent positions.", 
         if (!canRun() || trail.size < 2) return
         val camera = mc.gameRenderer.mainCamera.position
 
-        RenderSystem.enableBlend()
-        RenderSystem.defaultBlendFunc()
-        RenderSystem.disableDepthTest()
-
         val r = color.red / 255f
         val g = color.green / 255f
         val b = color.blue / 255f
-        val a = color.alpha / 255f
+        val baseA = color.alpha / 255f
 
-        val buffer = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR)
+        RenderUtil.begin(2.5f)
+        val buffer = RenderUtil.lines()
+        val total = trail.size
+        var index = 0
         var prev: Vec3? = null
         for (point in trail) {
             if (prev != null) {
-                buffer.addVertex((prev.x - camera.x).toFloat(), (prev.y - camera.y).toFloat(), (prev.z - camera.z).toFloat()).setColor(r, g, b, a)
-                buffer.addVertex((point.x - camera.x).toFloat(), (point.y - camera.y).toFloat(), (point.z - camera.z).toFloat()).setColor(r, g, b, a)
+                // older points (front of the deque) fade out, newest is brightest
+                val aPrev = baseA * (index.toFloat() / total)
+                val aCur = baseA * ((index + 1).toFloat() / total)
+                buffer.addVertex((prev.x - camera.x).toFloat(), (prev.y - camera.y).toFloat(), (prev.z - camera.z).toFloat()).setColor(r, g, b, aPrev)
+                buffer.addVertex((point.x - camera.x).toFloat(), (point.y - camera.y).toFloat(), (point.z - camera.z).toFloat()).setColor(r, g, b, aCur)
             }
             prev = point
+            index++
         }
-
-        GL11.glLineWidth(2f)
-        BufferUploader.drawWithShader(buffer.buildOrThrow())
-        GL11.glLineWidth(1f)
-
-        RenderSystem.enableDepthTest()
-        RenderSystem.disableBlend()
+        RenderUtil.draw(buffer)
+        RenderUtil.end()
     }
 
     override fun onDisable() {

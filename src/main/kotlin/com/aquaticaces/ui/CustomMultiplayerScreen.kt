@@ -9,409 +9,364 @@ import net.minecraft.client.multiplayer.ServerList
 import net.minecraft.client.multiplayer.resolver.ServerAddress
 import net.minecraft.network.chat.Component
 import org.lwjgl.glfw.GLFW
-import kotlin.math.roundToInt
 
 /**
- * CustomMultiplayerScreen.
- * Premium replacement for standard Multiplayer screen. Draws saved servers
- * as glowing vector cards and hosts an overlay dialog for Direct Connection IP typing.
+ * Premium replacement for the vanilla Multiplayer screen. Renders saved servers
+ * as cards and supports join, direct connect, add/edit/delete and scrolling.
+ * All hit geometry is computed once per frame and shared with click handling so
+ * the visuals and clicks always align.
  */
 class CustomMultiplayerScreen(private val parent: Screen?) : Screen(Component.literal("Multiplayer")) {
 
-    private class ServerCard(val data: ServerData) {
-        var hoverProgress = 0f
+    private data class Rect(val x: Float, val y: Float, val w: Float, val h: Float) {
+        fun has(mx: Double, my: Double) = mx >= x && mx <= x + w && my >= y && my <= y + h
     }
+
+    private enum class Modal { NONE, DIRECT, ADD, EDIT }
+
+    private class ServerCard(val data: ServerData) { var hoverProgress = 0f }
 
     private var serverList: ServerList? = null
     private val cards = mutableListOf<ServerCard>()
     private var selectedIndex = -1
-    private var isDirectConnectOpen = false
+    private var modal = Modal.NONE
 
-    // Input text widget wrapped inside vector popup bounds
+    private lateinit var nameInput: EditBox
     private lateinit var ipInput: EditBox
 
-    private var fadeProgress = 0.0f
+    private var menuTick = 0f
     private var scrollY = 0f
+    private var maxScroll = 0f
+
+    // hit rects, rebuilt every render
+    private val buttons = LinkedHashMap<String, Rect>()
+    private val cardRects = mutableListOf<Rect>()
+
+    private val cardH = 38f
+    private val cardGap = 8f
+    private val listX get() = 20f
+    private val listY get() = 56f
+    private val listW get() = width - 40f
+    private val listH get() = height - 116f
 
     override fun init() {
         super.init()
-        fadeProgress = 0f
-        
-        // 1. Load saved servers
-        serverList = ServerList(minecraft!!)
-        serverList?.load()
-        cards.clear()
-        
-        val list = serverList
-        if (list != null) {
-            for (i in 0 until list.size()) {
-                cards.add(ServerCard(list.get(i)))
-            }
-        }
+        serverList = ServerList(minecraft!!).also { it.load() }
+        rebuildCards()
 
-        // 2. Initialize Direct Connect input box
-        ipInput = EditBox(
-            minecraft!!.font,
-            (width / 2f - 90f).roundToInt(),
-            (height / 2f - 10f).roundToInt(),
-            180,
-            20,
-            Component.literal("Server IP")
-        )
-        ipInput.visible = false
+        nameInput = EditBox(minecraft!!.font, 0, 0, 196, 16, Component.literal("Name")).apply {
+            setBordered(false); setHint(Component.literal("My Server")); visible = false; setMaxLength(64)
+        }
+        ipInput = EditBox(minecraft!!.font, 0, 0, 196, 16, Component.literal("Server IP")).apply {
+            setBordered(false); setHint(Component.literal("play.example.net")); visible = false; setMaxLength(128)
+        }
+        addRenderableWidget(nameInput)
         addRenderableWidget(ipInput)
     }
 
+    private fun rebuildCards() {
+        cards.clear()
+        val list = serverList ?: return
+        for (i in 0 until list.size()) cards.add(ServerCard(list.get(i)))
+        if (selectedIndex >= cards.size) selectedIndex = -1
+    }
+
     override fun tick() {
-        fadeProgress = (fadeProgress + 0.08f).coerceAtMost(1.0f)
+        menuTick += 1f
     }
 
     override fun render(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val vectorRenderer = ClickGUI.vectorRenderer
-        val fontRenderer = ClickGUI.fontRenderer
+        val font = minecraft!!.font
+        val gw = width.toFloat()
+        val gh = height.toFloat()
+        buttons.clear()
+        cardRects.clear()
 
-        val scale = minecraft!!.window.guiScale.toFloat()
-        val guiWidth = minecraft!!.window.guiScaledWidth.toFloat()
-        val guiHeight = minecraft!!.window.guiScaledHeight.toFloat()
+        UiStyle.backdrop(guiGraphics, width, height, menuTick + partialTick)
 
-        // Begin NanoVG Frame
-        vectorRenderer.begin(guiWidth, guiHeight, scale)
+        // header
+        UiStyle.logoMark(guiGraphics, 32, 14, 26)
+        guiGraphics.drawString(font, "MULTIPLAYER", 52, 16, UiStyle.ACCENT, true)
+        guiGraphics.drawString(font, "${cards.size} saved servers  ·  select one to join", 52, 28, UiStyle.MUTED, true)
+        guiGraphics.fill(20, 46, width - 20, 47, UiStyle.BORDER)
 
-        // 1. Background gradient
-        val leftColor = 0xFF080A14.toInt()
-        val rightColor = 0xFF140D26.toInt()
-        vectorRenderer.drawLinearGradientRect(
-            0f, 0f, guiWidth, guiHeight, 0f,
-            0f, 0f, guiWidth, guiHeight,
-            leftColor, rightColor
-        )
+        // server list
+        val contentH = cards.size * (cardH + cardGap)
+        maxScroll = (contentH - listH).coerceAtLeast(0f)
+        scrollY = scrollY.coerceIn(-maxScroll, 0f)
 
-        // 2. Header Title
-        val headerText = "MULTIPLAYER BROWSER"
-        fontRenderer.drawString(
-            "outfit",
-            headerText,
-            20f,
-            20f,
-            16f,
-            0xFFFFFFFF.toInt()
-        )
+        if (cards.isEmpty()) {
+            val cx = width / 2
+            guiGraphics.drawCenteredString(font, "No saved servers yet", cx, (listY + listH / 2 - 12).toInt(), UiStyle.TEXT)
+            guiGraphics.drawCenteredString(font, "Use Add Server or Direct Join below.", cx, (listY + listH / 2 + 2).toInt(), UiStyle.MUTED)
+        }
 
-        // 3. Render Server List
-        val listX = 20f
-        val listY = 50f
-        val listW = guiWidth - 40f
-        val listH = guiHeight - 110f
-        
-        val cardH = 34f
-        val cardGap = 8f
-
+        guiGraphics.enableScissor(listX.toInt(), listY.toInt(), (listX + listW).toInt(), (listY + listH).toInt())
         cards.forEachIndexed { index, card ->
             val cardY = listY + index * (cardH + cardGap) + scrollY
-            
-            // Skip rendering if off-screen
+            val rect = Rect(listX, cardY, listW, cardH)
+            cardRects.add(rect)
             if (cardY + cardH < listY || cardY > listY + listH) return@forEachIndexed
 
             val isSelected = index == selectedIndex
-            val isHovered = mouseX >= listX && mouseX <= listX + listW && mouseY >= cardY && mouseY <= cardY + cardH && !isDirectConnectOpen
-            
-            // Update animations
-            val targetHover = if (isHovered) 1.0f else 0.0f
-            card.hoverProgress += (targetHover - card.hoverProgress) * 0.15f
+            val isHovered = modal == Modal.NONE && rect.has(mouseX.toDouble(), mouseY.toDouble())
+            card.hoverProgress += ((if (isHovered) 1f else 0f) - card.hoverProgress) * 0.18f
+            val hover = card.hoverProgress
+            val accent = if (isSelected) UiStyle.ACCENT else UiStyle.PURPLE
 
-            val hoverFactor = card.hoverProgress
-            val bgAlpha = (0x22 + (0x1F * hoverFactor)).toInt()
-            val cardBg = (bgAlpha shl 24) or (if (isSelected) 0x0072FF else 0x131521)
-            val cardBorder = (if (isSelected) 0xFF00C6FF.toInt() else ((0x3C + (0x7F * hoverFactor)).toInt() shl 24) or 0x2A2E3D)
+            val x1 = listX.toInt(); val y1 = cardY.toInt()
+            val x2 = (listX + listW).toInt(); val y2 = (cardY + cardH).toInt()
+            guiGraphics.fill(x1, y1, x2, y2, UiStyle.withAlpha(0x10131A, (0xCC + hover * 0x22).toInt().coerceAtMost(0xFF)))
+            if (isSelected || hover > 0.05f)
+                guiGraphics.fill(x1, y1, x2, y2, UiStyle.withAlpha(accent, ((if (isSelected) 0x20 else 0) + hover * 0x18).toInt()))
+            UiStyle.outline(guiGraphics, x1, y1, x2, y2,
+                if (isSelected) UiStyle.withAlpha(accent, 0xCC) else if (hover > 0.05f) UiStyle.withAlpha(accent, 0x88) else UiStyle.BORDER)
+            guiGraphics.fill(x1, y1, x1 + 3, y2, accent)
 
-            // Draw Server Card Container
-            vectorRenderer.drawRoundedRect(listX, cardY, listW, cardH, 4f, cardBg)
-            vectorRenderer.drawMultiPassOutline(listX, cardY, listW, cardH, 4f, 1.0f, cardBorder, (0x10 shl 24) or 0x00C6FF)
-
-            // Server Icon visual box placeholder
-            val iconSize = 22f
-            val ix = listX + 6f
+            val iconSize = 24f
+            val ix = listX + 8f
             val iy = cardY + cardH / 2f - iconSize / 2f
-            vectorRenderer.drawRoundedRect(ix, iy, iconSize, iconSize, 3f, 0xFF2A2E3D.toInt())
-            fontRenderer.drawString("outfit", "S", ix + 8f, iy + 4f, 11f, 0xFFFFFFFF.toInt())
+            guiGraphics.fillGradient(ix.toInt(), iy.toInt(), (ix + iconSize).toInt(), (iy + iconSize).toInt(), UiStyle.ACCENT, UiStyle.ACCENT_2)
+            guiGraphics.drawCenteredString(font, card.data.name.take(1).uppercase(), (ix + iconSize / 2f).toInt(), (iy + 8f).toInt(), 0xFF02030A.toInt())
 
-            // Server details text
-            fontRenderer.drawString(
-                "outfit",
-                card.data.name,
-                ix + iconSize + 10f,
-                cardY + 5f,
-                12f,
-                0xFFFFFFFF.toInt()
-            )
-            fontRenderer.drawString(
-                "outfit",
-                card.data.ip,
-                ix + iconSize + 10f,
-                cardY + 18f,
-                9f,
-                0xFF9898A6.toInt()
-            )
+            guiGraphics.drawString(font, card.data.name, (ix + iconSize + 12f).toInt(), (cardY + 7f).toInt(), if (isSelected) UiStyle.ACCENT else UiStyle.TEXT, false)
+            guiGraphics.drawString(font, card.data.ip, (ix + iconSize + 12f).toInt(), (cardY + 21f).toInt(), UiStyle.MUTED, false)
+        }
+        guiGraphics.disableScissor()
 
-            // MOTD
-            val motd = card.data.motd?.string ?: "No connection details resolved."
-            val motdText = if (motd.length > 50) motd.substring(0, 47) + "..." else motd
-            fontRenderer.drawString(
-                "outfit",
-                motdText,
-                ix + iconSize + 150f,
-                cardY + 11f,
-                9.5f,
-                0xFFB6B6C2.toInt()
-            )
-
-            // Player counts
-            val players = "${card.data.players?.online ?: 0} / ${card.data.players?.max ?: 0}"
-            val countW = fontRenderer.getStringWidth("outfit", players, 11f)
-            fontRenderer.drawString(
-                "outfit",
-                players,
-                listX + listW - countW - 12f,
-                cardY + 11f,
-                11f,
-                0xFF00FF55.toInt()
-            )
+        // scrollbar
+        if (maxScroll > 0f) {
+            val trackX = (listX + listW + 2).toInt()
+            val barH = (listH * (listH / contentH)).coerceAtLeast(20f)
+            val barY = listY + (-scrollY / maxScroll) * (listH - barH)
+            guiGraphics.fill(trackX, listY.toInt(), trackX + 3, (listY + listH).toInt(), 0x33000000)
+            guiGraphics.fill(trackX, barY.toInt(), trackX + 3, (barY + barH).toInt(), UiStyle.withAlpha(UiStyle.ACCENT, 0xAA))
         }
 
-        // 4. Render Bottom Control Buttons
-        val btnW = 85f
-        val btnH = 22f
-        val btnY = guiHeight - 35f
-        val startBtnX = 20f
-
-        // Draw Join Button
-        val hasSelection = selectedIndex != -1
-        drawMenuButton(vectorRenderer, fontRenderer, "Join", startBtnX, btnY, btnW, btnH, hasSelection && !isDirectConnectOpen, mouseX, mouseY) {
-            joinSelectedServer()
-        }
-
-        // Draw Direct Connect Button
-        drawMenuButton(vectorRenderer, fontRenderer, "Direct Join", startBtnX + btnW + 10f, btnY, btnW, btnH, !isDirectConnectOpen, mouseX, mouseY) {
-            isDirectConnectOpen = true
-            ipInput.visible = true
-            ipInput.isFocused = true
-        }
-
-        // Draw Alts Button
-        drawMenuButton(vectorRenderer, fontRenderer, "Alts", startBtnX + (btnW + 10f) * 2, btnY, btnW, btnH, !isDirectConnectOpen, mouseX, mouseY) {
-            minecraft!!.setScreen(com.aquaticaces.ui.AltManagerScreen(this))
-        }
-
-        // Draw Back Button
-        drawMenuButton(vectorRenderer, fontRenderer, "Back", guiWidth - btnW - 20f, btnY, btnW, btnH, true, mouseX, mouseY) {
-            minecraft!!.setScreen(MainMenuScreen())
-        }
-
-        // 5. Draw Direct Connect Overlay Popup Modal
-        if (isDirectConnectOpen) {
-            // Dark transparent background shield
-            vectorRenderer.drawRoundedRect(0f, 0f, guiWidth, guiHeight, 0f, 0x88000000.toInt())
-
-            val modalW = 220f
-            val modalH = 100f
-            val mx = guiWidth / 2f - modalW / 2f
-            val my = guiHeight / 2f - modalH / 2f
-
-            // Modal container card
-            vectorRenderer.drawDropShadow(mx, my, modalW, modalH, 6f, 12f, 0x80000000.toInt())
-            vectorRenderer.drawRoundedRect(mx, my, modalW, modalH, 6f, 0xFF131521.toInt())
-            vectorRenderer.drawMultiPassOutline(mx, my, modalW, modalH, 6f, 1.0f, 0xFF2A2E3D.toInt(), 0x1A00C6FF.toInt())
-
-            // Modal Header text
-            val modalTitle = "DIRECT JOIN SERVER"
-            val mtW = fontRenderer.getStringWidth("outfit", modalTitle, 12f)
-            fontRenderer.drawString(
-                "outfit",
-                modalTitle,
-                guiWidth / 2f - mtW / 2f,
-                my + 10f,
-                12f,
-                0xFFFFFFFF.toInt()
-            )
-
-            // Styled background outline around the vanilla EditBox widget
-            vectorRenderer.drawRoundedRect(mx + 18f, my + 38f, 184f, 24f, 3f, 0xFF0F1015.toInt())
-            vectorRenderer.drawMultiPassOutline(mx + 18f, my + 38f, 184f, 24f, 3f, 1.0f, 0xFF2A2E3D.toInt(), 0x00000000)
-
-            // Dialog action buttons
-            val subBtnW = 80f
-            val subBtnH = 18f
-            val subBtnY = my + 72f
-
-            // Connect button inside modal
-            val ipVal = ipInput.value
-            val canConnect = ipVal.isNotBlank()
-            drawMenuButton(vectorRenderer, fontRenderer, "Connect", mx + 20f, subBtnY, subBtnW, subBtnH, canConnect, mouseX, mouseY) {
-                connectDirect(ipVal)
+        // bottom button bar (responsive)
+        val barY = gh - 34f
+        val barH = 24f
+        val backW = 64f
+        val gap = 6f
+        val leftLabels = listOf("Join", "Direct", "Add", "Edit", "Delete", "Alts")
+        val availLeft = gw - 40f - backW - gap
+        val eachW = ((availLeft - gap * (leftLabels.size - 1)) / leftLabels.size).coerceIn(36f, 90f)
+        var bx = 20f
+        val hasSel = selectedIndex != -1
+        for (label in leftLabels) {
+            val enabled = when (label) {
+                "Join", "Edit", "Delete" -> hasSel && modal == Modal.NONE
+                else -> modal == Modal.NONE
             }
-
-            // Cancel button inside modal
-            drawMenuButton(vectorRenderer, fontRenderer, "Cancel", mx + modalW - subBtnW - 20f, subBtnY, subBtnW, subBtnH, true, mouseX, mouseY) {
-                isDirectConnectOpen = false
-                ipInput.visible = false
-                ipInput.value = ""
-            }
+            val rect = Rect(bx, barY, eachW, barH)
+            buttons[label] = rect
+            drawButton(guiGraphics, font, label, rect, enabled, mouseX, mouseY, primary = label == "Join")
+            bx += eachW + gap
         }
+        val backRect = Rect(gw - backW - 20f, barY, backW, barH)
+        buttons["Back"] = backRect
+        drawButton(guiGraphics, font, "Back", backRect, true, mouseX, mouseY)
 
-        vectorRenderer.end()
+        // modal
+        if (modal != Modal.NONE) renderModal(guiGraphics, font, gw, gh, mouseX, mouseY)
+        else { nameInput.visible = false; ipInput.visible = false }
+
+        super.render(guiGraphics, mouseX, mouseY, partialTick)
     }
 
-    private fun drawMenuButton(
-        vr: VectorRenderer,
-        fr: FontRenderer,
-        label: String,
-        bx: Float,
-        by: Float,
-        bw: Float,
-        bh: Float,
-        enabled: Boolean,
-        mx: Int,
-        my: Int,
-        onClick: () -> Unit
-    ) {
-        val isHovered = enabled && mx >= bx && mx <= bx + bw && my >= by && my <= by + bh
-        val bgAlpha = if (enabled) (if (isHovered) 0x66 else 0x36) else 0x15
-        val buttonBg = (bgAlpha shl 24) or (if (isHovered) 0x0072FF else 0x131521)
-        val buttonBorder = ((if (enabled) (if (isHovered) 0xAA else 0x4B) else 0x24) shl 24) or 0x2A2E3D
+    private fun renderModal(g: GuiGraphics, font: net.minecraft.client.gui.Font, gw: Float, gh: Float, mouseX: Int, mouseY: Int) {
+        g.fill(0, 0, width, height, 0xCC000000.toInt())
+        val twoFields = modal == Modal.ADD || modal == Modal.EDIT
+        val modalW = 260f
+        val modalH = if (twoFields) 150f else 110f
+        val mx = gw / 2f - modalW / 2f
+        val my = gh / 2f - modalH / 2f
 
-        vr.drawRoundedRect(bx, by, bw, bh, 3f, buttonBg)
-        vr.drawMultiPassOutline(bx, by, bw, bh, 3f, 1.0f, buttonBorder, 0)
+        UiStyle.card(g, mx.toInt(), my.toInt(), (mx + modalW).toInt(), (my + modalH).toInt())
+        val titleText = when (modal) {
+            Modal.DIRECT -> "DIRECT JOIN"
+            Modal.ADD -> "ADD SERVER"
+            Modal.EDIT -> "EDIT SERVER"
+            else -> ""
+        }
+        g.drawCenteredString(font, titleText, (gw / 2f).toInt(), (my + 14f).toInt(), UiStyle.ACCENT)
 
-        val textW = fr.getStringWidth("outfit", label, 10f)
-        val textColor = if (enabled) (if (isHovered) 0xFF00C6FF.toInt() else 0xFFFFFFFF.toInt()) else 0xFF585864.toInt()
-        fr.drawString(
-            "outfit",
-            label,
-            bx + bw / 2f - textW / 2f,
-            by + bh / 2f - 5f,
-            10f,
-            textColor
-        )
+        var fieldY = my + 34f
+        if (twoFields) {
+            g.drawString(font, "Name", (mx + 18f).toInt(), fieldY.toInt(), UiStyle.MUTED, false)
+            field(g, nameInput, mx + 18f, fieldY + 10f, modalW - 36f)
+            fieldY += 38f
+            g.drawString(font, "Address", (mx + 18f).toInt(), fieldY.toInt(), UiStyle.MUTED, false)
+            field(g, ipInput, mx + 18f, fieldY + 10f, modalW - 36f)
+        } else {
+            g.drawString(font, "Address", (mx + 18f).toInt(), fieldY.toInt(), UiStyle.MUTED, false)
+            field(g, ipInput, mx + 18f, fieldY + 10f, modalW - 36f)
+            nameInput.visible = false
+        }
+
+        val subW = 96f
+        val subH = 20f
+        val subY = my + modalH - subH - 14f
+        val okLabel = if (modal == Modal.DIRECT) "Connect" else "Save"
+        val okRect = Rect(mx + 20f, subY, subW, subH)
+        val cancelRect = Rect(mx + modalW - subW - 20f, subY, subW, subH)
+        buttons["modalOk"] = okRect
+        buttons["modalCancel"] = cancelRect
+        val okEnabled = ipInput.value.isNotBlank() && (!twoFields || nameInput.value.isNotBlank())
+        drawButton(g, font, okLabel, okRect, okEnabled, mouseX, mouseY, primary = true)
+        drawButton(g, font, "Cancel", cancelRect, true, mouseX, mouseY)
+    }
+
+    private fun field(g: GuiGraphics, box: EditBox, x: Float, y: Float, w: Float) {
+        g.fill(x.toInt(), y.toInt(), (x + w).toInt(), (y + 18f).toInt(), 0x66000000)
+        UiStyle.outline(g, x.toInt(), y.toInt(), (x + w).toInt(), (y + 18f).toInt(), UiStyle.BORDER)
+        box.setX((x + 5f).toInt())
+        box.setY((y + 5f).toInt())
+        box.width = (w - 10f).toInt()
+        box.visible = true
+    }
+
+    private fun drawButton(g: GuiGraphics, font: net.minecraft.client.gui.Font, label: String, r: Rect, enabled: Boolean, mx: Int, my: Int, primary: Boolean = false) {
+        val x1 = r.x.toInt(); val y1 = r.y.toInt(); val x2 = (r.x + r.w).toInt(); val y2 = (r.y + r.h).toInt()
+        val cx = (r.x + r.w / 2f).toInt(); val cy = (r.y + r.h / 2f - 4f).toInt()
+        val hovered = enabled && r.has(mx.toDouble(), my.toDouble())
+        if (!enabled) {
+            g.fill(x1, y1, x2, y2, 0x55131521)
+            UiStyle.outline(g, x1, y1, x2, y2, 0x552A2E3D)
+            g.drawCenteredString(font, label, cx, cy, 0xFF585864.toInt())
+            return
+        }
+        if (primary) {
+            if (hovered) g.fill(x1 - 2, y1 - 2, x2 + 2, y2 + 2, UiStyle.withAlpha(UiStyle.ACCENT, 0x55))
+            g.fillGradient(x1, y1, x2, y2, UiStyle.ACCENT, UiStyle.ACCENT_2)
+            g.fill(x1, y1, x2, y1 + 1, 0x44FFFFFF)
+            g.drawCenteredString(font, label, cx, cy, 0xFFFFFFFF.toInt())
+        } else {
+            g.fill(x1, y1, x2, y2, if (hovered) UiStyle.withAlpha(0x1A2230, 0xCC) else 0x99131521.toInt())
+            UiStyle.outline(g, x1, y1, x2, y2, if (hovered) UiStyle.withAlpha(UiStyle.ACCENT, 0x88) else UiStyle.BORDER)
+            g.fill(x1, y1, x1 + 2, y2, UiStyle.ACCENT)
+            g.drawCenteredString(font, label, cx, cy, if (hovered) UiStyle.ACCENT else UiStyle.TEXT)
+        }
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val guiWidth = minecraft!!.window.guiScaledWidth.toFloat()
-        val guiHeight = minecraft!!.window.guiScaledHeight.toFloat()
-
-        if (isDirectConnectOpen) {
-            val modalW = 220f
-            val modalH = 100f
-            val mx = guiWidth / 2f - modalW / 2f
-            val my = guiHeight / 2f - modalH / 2f
-            val subBtnW = 80f
-            val subBtnH = 18f
-            val subBtnY = my + 72f
-
-            // Check Connect click
-            if (mouseX >= mx + 20f && mouseX <= mx + 20f + subBtnW && mouseY >= subBtnY && mouseY <= subBtnY + subBtnH) {
-                if (ipInput.value.isNotBlank()) {
-                    connectDirect(ipInput.value)
-                }
-                return true
-            }
-
-            // Check Cancel click
-            if (mouseX >= mx + modalW - subBtnW - 20f && mouseX <= mx + modalW - 20f && mouseY >= subBtnY && mouseY <= subBtnY + subBtnH) {
-                isDirectConnectOpen = false
-                ipInput.visible = false
-                ipInput.value = ""
-                return true
-            }
-
+        if (modal != Modal.NONE) {
+            if (buttons["modalOk"]?.has(mouseX, mouseY) == true) { confirmModal(); return true }
+            if (buttons["modalCancel"]?.has(mouseX, mouseY) == true) { closeModal(); return true }
             return super.mouseClicked(mouseX, mouseY, button)
         }
 
-        // Standard multiplayer coordinates
-        val listX = 20f
-        val listY = 50f
-        val listW = guiWidth - 40f
-        val cardH = 34f
-        val cardGap = 8f
-
-        // Check list selections
-        cards.forEachIndexed { index, card ->
-            val cardY = listY + index * (cardH + cardGap) + scrollY
-            if (mouseX >= listX && mouseX <= listX + listW && mouseY >= cardY && mouseY <= cardY + cardH) {
+        // card selection
+        cardRects.forEachIndexed { index, rect ->
+            if (rect.has(mouseX, mouseY) && mouseY >= listY && mouseY <= listY + listH) {
                 selectedIndex = index
                 return true
             }
         }
 
-        // Bottom control clicks
-        val btnW = 85f
-        val btnH = 22f
-        val btnY = guiHeight - 35f
-        val startBtnX = 20f
-
-        // Check Join click
-        if (selectedIndex != -1 && mouseX >= startBtnX && mouseX <= startBtnX + btnW && mouseY >= btnY && mouseY <= btnY + btnH) {
-            joinSelectedServer()
-            return true
+        when {
+            buttons["Join"]?.has(mouseX, mouseY) == true && selectedIndex != -1 -> { joinSelectedServer(); return true }
+            buttons["Direct"]?.has(mouseX, mouseY) == true -> { openModal(Modal.DIRECT); return true }
+            buttons["Add"]?.has(mouseX, mouseY) == true -> { openModal(Modal.ADD); return true }
+            buttons["Edit"]?.has(mouseX, mouseY) == true && selectedIndex != -1 -> { openModal(Modal.EDIT); return true }
+            buttons["Delete"]?.has(mouseX, mouseY) == true && selectedIndex != -1 -> { deleteSelected(); return true }
+            buttons["Alts"]?.has(mouseX, mouseY) == true -> { minecraft!!.setScreen(AltManagerScreen(this)); return true }
+            buttons["Back"]?.has(mouseX, mouseY) == true -> { minecraft!!.setScreen(parent ?: MainMenuScreen()); return true }
         }
-
-        // Check Direct Join click
-        if (mouseX >= startBtnX + btnW + 10f && mouseX <= startBtnX + btnW + 10f + btnW && mouseY >= btnY && mouseY <= btnY + btnH) {
-            isDirectConnectOpen = true
-            ipInput.visible = true
-            ipInput.isFocused = true
-            return true
-        }
-
-        // Check Alts click
-        if (mouseX >= startBtnX + (btnW + 10f) * 2 && mouseX <= startBtnX + (btnW + 10f) * 2 + btnW && mouseY >= btnY && mouseY <= btnY + btnH) {
-            minecraft!!.setScreen(com.aquaticaces.ui.AltManagerScreen(this))
-            return true
-        }
-
-        // Check Back click
-        if (mouseX >= guiWidth - btnW - 20f && mouseX <= guiWidth - 20f && mouseY >= btnY && mouseY <= btnY + btnH) {
-            minecraft!!.setScreen(MainMenuScreen())
-            return true
-        }
-
         return super.mouseClicked(mouseX, mouseY, button)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (isDirectConnectOpen) {
-            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
-                if (ipInput.value.isNotBlank()) {
-                    connectDirect(ipInput.value)
-                }
-                return true
-            }
-            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-                isDirectConnectOpen = false
-                ipInput.visible = false
-                ipInput.value = ""
-                return true
-            }
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, deltaX: Double, deltaY: Double): Boolean {
+        if (modal == Modal.NONE && maxScroll > 0f) {
+            scrollY = (scrollY + deltaY.toFloat() * 18f).coerceIn(-maxScroll, 0f)
+            return true
         }
+        return super.mouseScrolled(mouseX, mouseY, deltaX, deltaY)
+    }
+
+    private fun openModal(m: Modal) {
+        modal = m
+        nameInput.value = ""
+        ipInput.value = ""
+        if (m == Modal.EDIT && selectedIndex != -1) {
+            val d = cards[selectedIndex].data
+            nameInput.value = d.name
+            ipInput.value = d.ip
+        }
+        val focusName = m == Modal.ADD || m == Modal.EDIT
+        nameInput.isFocused = focusName
+        ipInput.isFocused = !focusName
+    }
+
+    private fun closeModal() {
+        modal = Modal.NONE
+        nameInput.visible = false
+        ipInput.visible = false
+        nameInput.value = ""
+        ipInput.value = ""
+    }
+
+    private fun confirmModal() {
+        when (modal) {
+            Modal.DIRECT -> if (ipInput.value.isNotBlank()) { connectDirect(ipInput.value); return }
+            Modal.ADD -> if (ipInput.value.isNotBlank() && nameInput.value.isNotBlank()) {
+                val data = ServerData(nameInput.value, ipInput.value, ServerData.Type.OTHER)
+                serverList?.add(data, false)
+                serverList?.save()
+                rebuildCards()
+            }
+            Modal.EDIT -> if (selectedIndex != -1 && ipInput.value.isNotBlank() && nameInput.value.isNotBlank()) {
+                val list = serverList
+                if (list != null && selectedIndex < list.size()) {
+                    val d = list.get(selectedIndex)
+                    d.name = nameInput.value
+                    d.ip = ipInput.value
+                    list.save()
+                    rebuildCards()
+                }
+            }
+            Modal.NONE -> {}
+        }
+        if (modal != Modal.DIRECT) closeModal()
+    }
+
+    private fun deleteSelected() {
+        val list = serverList ?: return
+        if (selectedIndex < 0 || selectedIndex >= list.size()) return
+        list.remove(list.get(selectedIndex))
+        list.save()
+        selectedIndex = -1
+        rebuildCards()
+    }
+
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if (modal != Modal.NONE) {
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) { confirmModal(); return true }
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) { closeModal(); return true }
+            if (keyCode == GLFW.GLFW_KEY_TAB && (modal == Modal.ADD || modal == Modal.EDIT)) {
+                val toName = !nameInput.isFocused
+                nameInput.isFocused = toName
+                ipInput.isFocused = !toName
+                return true
+            }
+            return super.keyPressed(keyCode, scanCode, modifiers)
+        }
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) { minecraft!!.setScreen(parent ?: MainMenuScreen()); return true }
         return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
     private fun joinSelectedServer() {
-        val index = selectedIndex
-        val list = serverList
-        if (index != -1 && list != null && index < list.size()) {
-            val server = list.get(index)
-            ConnectScreen.startConnecting(
-                this, minecraft!!, ServerAddress.parseString(server.ip), server, false, null
-            )
+        val list = serverList ?: return
+        if (selectedIndex in 0 until list.size()) {
+            val server = list.get(selectedIndex)
+            ConnectScreen.startConnecting(this, minecraft!!, ServerAddress.parseString(server.ip), server, false, null)
         }
     }
 
     private fun connectDirect(ip: String) {
         val serverData = ServerData("Direct Connect", ip, ServerData.Type.OTHER)
-        ConnectScreen.startConnecting(
-            this, minecraft!!, ServerAddress.parseString(ip), serverData, false, null
-        )
+        ConnectScreen.startConnecting(this, minecraft!!, ServerAddress.parseString(ip), serverData, false, null)
     }
 
-    override fun shouldCloseOnEsc(): Boolean = !isDirectConnectOpen
+    override fun shouldCloseOnEsc(): Boolean = false
 }

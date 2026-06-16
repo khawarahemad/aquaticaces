@@ -9,90 +9,47 @@ import com.aquaticaces.ui.ClickGUI
 import net.minecraft.client.Minecraft
 
 /**
- * ArrayListHUD.
- * Displays all enabled modules in the top-right corner of the screen, sorted by name width.
- * Features smooth slide animations and a shifting color theme.
+ * Minimal top-right enabled-module list: clean shadowed text colored per
+ * category with a thin accent edge. No background boxes.
  */
 class ArrayListHUD {
     private val mc = Minecraft.getInstance()
-    private val slideMap = mutableMapOf<String, Double>()
+    private val slideMap = mutableMapOf<String, Float>()
 
     @Subscribe
     fun onRender2D(event: EventRender2D) {
         if (mc.options.hideGui) return
-
         if (!HudSettings.isEnabled("arraylist")) return
-        val guiWidth = mc.window.guiScaledWidth.toFloat()
-        val fontRenderer = ClickGUI.fontRenderer
-        val vectorRenderer = ClickGUI.vectorRenderer
 
-        // 1. Update slide animation progress for all registered modules
+        val g = event.guiGraphics
+        val font = mc.font
+        val guiWidth = mc.window.guiScaledWidth
+
         for (module in ModuleManager.modules) {
-            val target = if (module.isEnabled) 1.0 else 0.0
-            val current = slideMap.getOrDefault(module.name, 0.0)
-            
+            val target = if (module.isEnabled) 1f else 0f
+            val current = slideMap.getOrDefault(module.name, 0f)
             if (current != target) {
-                val step = 0.15
-                val next = if (current < target) {
-                    (current + step).coerceAtMost(target)
-                } else {
-                    (current - step).coerceAtLeast(target)
-                }
-                slideMap[module.name] = next
+                slideMap[module.name] = if (current < target) (current + 0.2f).coerceAtMost(target)
+                else (current - 0.2f).coerceAtLeast(target)
             }
         }
 
-        // 2. Filter modules that are at least partially visible
-        val visibleModules = ModuleManager.modules.filter { 
-            slideMap.getOrDefault(it.name, 0.0) > 0.01 
-        }.sortedByDescending { 
-            fontRenderer.getStringWidth("outfit", it.name, 11f) 
+        val visible = ModuleManager.modules
+            .filter { slideMap.getOrDefault(it.name, 0f) > 0.01f }
+            .sortedByDescending { font.width(it.name) }
+        if (visible.isEmpty()) return
+
+        var y = HudLayout.positions.arrayListY.toInt().coerceAtLeast(4)
+        for (module in visible) {
+            val progress = slideMap.getOrDefault(module.name, 0f)
+            val accent = ClickGUI.catColor(module.category)
+            val textW = font.width(module.name)
+            val x = guiWidth - 6 - (textW * progress).toInt()
+            g.drawString(font, module.name, x, y, accent, true)
+            g.fill(guiWidth - 2, y - 1, guiWidth, y + 9, accent)
+            y += 11
         }
 
-        if (visibleModules.isEmpty()) return
-
-        // 3. Render modules list
-        val scale = mc.window.guiScale.toFloat()
-        val guiHeight = mc.window.guiScaledHeight.toFloat()
-        vectorRenderer.begin(guiWidth, guiHeight, scale)
-
-        var yOffset = HudLayout.positions.arrayListY
-        val rightPad = if (HudLayout.positions.arrayListX < 0f) -HudLayout.positions.arrayListX else 8f
-        val time = System.currentTimeMillis()
-
-        for (module in visibleModules) {
-            val progress = slideMap.getOrDefault(module.name, 0.0)
-            val name = module.name
-            val textWidth = fontRenderer.getStringWidth("outfit", name, 11f)
-            
-            // X position slides in from right edge
-            val x = guiWidth - (textWidth + rightPad) * progress.toFloat()
-
-            // Compute dynamic HSL color shift
-            val hue = ((time / 15 + yOffset.toInt()) % 360) / 360f
-            val color = java.awt.Color.getHSBColor(hue, 0.7f, 1.0f).rgb
-
-            // Background rect with alpha transparency
-            val alphaScale = (progress * 0xAA).toInt()
-            val rectColor = (alphaScale shl 24) or 0x0F1015
-
-            // Draw clean module label card
-            vectorRenderer.drawRoundedRect(x, yOffset, textWidth + 8f, 12f, 2f, rectColor)
-            fontRenderer.drawString(
-                "outfit",
-                name,
-                x + 3f,
-                yOffset + 1f,
-                11f,
-                (0xFF shl 24) or (color and 0xFFFFFF)
-            )
-
-            // Shifting colored right border accent
-            vectorRenderer.drawRoundedRect(guiWidth - 2f, yOffset, 2f, 12f, 0f, (0xFF shl 24) or (color and 0xFFFFFF))
-
-            yOffset += 14f
-        }
-
-        vectorRenderer.end()
+        slideMap.keys.retainAll { name -> ModuleManager.modules.any { it.name == name } }
     }
 }

@@ -4,72 +4,66 @@ import com.aquaticaces.event.Subscribe
 import com.aquaticaces.event.impl.EventRender3D
 import com.aquaticaces.module.Category
 import com.aquaticaces.module.Module
+import com.aquaticaces.module.setting.BooleanSetting
 import com.aquaticaces.module.setting.ColorSetting
-import com.mojang.blaze3d.systems.RenderSystem
-import com.mojang.blaze3d.vertex.DefaultVertexFormat
-import com.mojang.blaze3d.vertex.Tesselator
-import com.mojang.blaze3d.vertex.VertexFormat
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
-import org.lwjgl.glfw.GLFW
-import org.lwjgl.opengl.GL11
 
 /**
- * Tracers module.
- * Renders lines in 3D space from the player's crosshair to nearby player targets.
+ * Tracers — draws lines from the screen center to nearby targets. The line
+ * fades from transparent at the origin to full color at the target, and can
+ * tint by distance for quick threat reading.
  */
-class Tracers : Module("Tracers", "Draws lines to other players.", Category.RENDER) {
+class Tracers : Module("Tracers", "Draws fading lines to nearby targets.", Category.RENDER) {
 
-    val color = ColorSetting("Color", 0xFF00FF55.toInt())
+    val color = ColorSetting("Color", 0xFF00C6FF.toInt())
+    val playersOnly = BooleanSetting("Players Only", true)
+    val distanceColor = BooleanSetting("Distance Color", true)
 
     init {
-        addSettings(color)
+        addSettings(color, playersOnly, distanceColor)
     }
 
     @Subscribe
     fun onRender3D(event: EventRender3D) {
         val player = mc.player ?: return
         val level = mc.level ?: return
-        val camera = mc.gameRenderer.mainCamera
-        val cameraPos = camera.position
+        val cam = mc.gameRenderer.mainCamera.position
 
-        RenderSystem.enableBlend()
-        RenderSystem.defaultBlendFunc()
-        RenderSystem.disableDepthTest()
-        RenderSystem.disableCull()
+        RenderUtil.begin(1.8f)
+        val buf = RenderUtil.lines()
 
-        val tesselator = Tesselator.getInstance()
-        val bufferBuilder = tesselator.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR)
-
-        val r = color.red / 255f
-        val g = color.green / 255f
-        val b = color.blue / 255f
-        val a = color.alpha / 255f
-
-        // Draw tracers from the center of camera view (0, 0, 0 in relative coords) to entities
-        val lookVec = player.getLookAngle()
-        val startX = lookVec.x * 0.5
-        val startY = player.eyeHeight.toDouble() - 0.1
-        val startZ = lookVec.z * 0.5
+        val look = player.lookAngle
+        val sx = (look.x * 0.6).toFloat()
+        val sy = (player.eyeHeight - 0.15).toFloat()
+        val sz = (look.z * 0.6).toFloat()
 
         for (entity in level.entitiesForRendering()) {
-            if (entity === player || entity !is Player || !entity.isAlive) continue
+            if (entity === player || !entity.isAlive) continue
+            if (playersOnly.value && entity !is Player) continue
+            if (!playersOnly.value && entity !is LivingEntity) continue
 
-            // Translated eye coordinates of target
-            val targetX = entity.x - cameraPos.x
-            val targetY = entity.eyeY - cameraPos.y
-            val targetZ = entity.z - cameraPos.z
+            val tx = (entity.x - cam.x).toFloat()
+            val ty = (entity.eyeY - cam.y).toFloat()
+            val tz = (entity.z - cam.z).toFloat()
 
-            // Base offset line from center of camera view
-            bufferBuilder.addVertex(0f, 0f, 0f).setColor(r, g, b, a)
-            bufferBuilder.addVertex(targetX.toFloat(), targetY.toFloat(), targetZ.toFloat()).setColor(r, g, b, a)
+            var r = RenderUtil.red(color.value)
+            var g = RenderUtil.green(color.value)
+            var b = RenderUtil.blue(color.value)
+            if (distanceColor.value) {
+                val dist = player.distanceTo(entity).coerceIn(0f, 32f) / 32f
+                // near = red/danger, far = accent
+                r = 1f - dist * (1f - RenderUtil.red(color.value))
+                g = dist * RenderUtil.green(color.value)
+                b = dist * RenderUtil.blue(color.value)
+            }
+
+            // origin: transparent, target: full
+            buf.addVertex(sx, sy, sz).setColor(r, g, b, 0.0f)
+            buf.addVertex(tx, ty, tz).setColor(r, g, b, 1.0f)
         }
 
-        GL11.glLineWidth(1.5f)
-        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow())
-        GL11.glLineWidth(1.0f)
-
-        RenderSystem.enableDepthTest()
-        RenderSystem.enableCull()
-        RenderSystem.disableBlend()
+        RenderUtil.draw(buf)
+        RenderUtil.end()
     }
 }

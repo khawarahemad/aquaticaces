@@ -5,6 +5,7 @@
   "client": [
     "MixinMinecraftClient",
     "MixinMinecraftScreen",
+    "MixinScreen",
     "MixinClientConnection",
     "MixinInGameHud",
     "MixinKeyboard",
@@ -19,7 +20,10 @@
     "MixinLightTexture",
     "MixinEntityRenderer",
     "MixinItemInHandRenderer",
+    "MixinTitleScreen",
+    "MixinPauseScreen",
     "MixinJoinMultiplayerScreen",
+    "MixinLoadingOverlay",
     "ServerboundInteractPacketMixin",
     "ServerboundMovePlayerPacketAccessor",
     "MinecraftUserAccessor",

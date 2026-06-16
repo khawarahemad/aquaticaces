@@ -17,7 +17,7 @@ plugins {
     id("fabric-loom") version "1.10.5"
 }
 
-version = "1.2.0"
+version = "1.3.7"
 group = "com.aquaticaces"
 
 base {
@@ -53,14 +53,21 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
-    // NanoVG (LWJGL Bindings) — cross-platform natives
-    implementation("org.lwjgl:lwjgl-nanovg:$lwjglVersion")
-    runtimeOnly("org.lwjgl:lwjgl-nanovg:$lwjglVersion:natives-linux")
-    runtimeOnly("org.lwjgl:lwjgl-nanovg:$lwjglVersion:natives-linux-arm64")
-    runtimeOnly("org.lwjgl:lwjgl-nanovg:$lwjglVersion:natives-windows")
-    runtimeOnly("org.lwjgl:lwjgl-nanovg:$lwjglVersion:natives-windows-arm64")
-    runtimeOnly("org.lwjgl:lwjgl-nanovg:$lwjglVersion:natives-macos")
-    runtimeOnly("org.lwjgl:lwjgl-nanovg:$lwjglVersion:natives-macos-arm64")
+    // NanoVG — ship Java bindings + natives inside the mod jar (Minecraft does not include nanovg)
+    modImplementation("org.lwjgl:lwjgl-nanovg:$lwjglVersion")
+    include("org.lwjgl:lwjgl-nanovg:$lwjglVersion")
+
+    listOf(
+        "windows",
+        "windows-arm64",
+        "linux",
+        "linux-arm64",
+        "macos",
+        "macos-arm64",
+    ).forEach { platform ->
+        modImplementation("org.lwjgl:lwjgl-nanovg:$lwjglVersion:natives-$platform")
+        include("org.lwjgl:lwjgl-nanovg:$lwjglVersion:natives-$platform")
+    }
 }
 
 tasks.processResources {
@@ -109,6 +116,10 @@ tasks.register<ProGuardTask>("proguard") {
         }
         -keep public class * implements net.fabricmc.api.ClientModInitializer { *; }
         -keep class com.aquaticaces.mixin.** { *; }
+        -keep class com.aquaticaces.accessor.** { *; }
+        -keep class com.aquaticaces.ui.** { *; }
+        -keep class com.aquaticaces.event.** { *; }
+        -keep class com.aquaticaces.module.impl.ghost.SelfDestruct { *; }
         -keepclassmembers class * {
             @org.spongepowered.asm.mixin.Shadow <fields>;
             @org.spongepowered.asm.mixin.Shadow <methods>;

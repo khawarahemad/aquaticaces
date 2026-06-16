@@ -3,9 +3,12 @@ package com.aquaticaces.ui.hud
 import com.aquaticaces.core.HudSettings
 import com.aquaticaces.event.Subscribe
 import com.aquaticaces.event.impl.EventRender2D
-import com.aquaticaces.ui.ClickGUI
+import com.aquaticaces.ui.UiStyle
 import net.minecraft.client.Minecraft
 
+/**
+ * Minimal bottom-left coordinates readout as clean shadowed text.
+ */
 class CoordinatesHUD {
     private val mc = Minecraft.getInstance()
 
@@ -14,15 +17,18 @@ class CoordinatesHUD {
         if (mc.options.hideGui) return
         if (!HudSettings.isEnabled("coordinates")) return
         val player = mc.player ?: return
-        val font = ClickGUI.fontRenderer
-        val vector = ClickGUI.vectorRenderer
 
-        val text = String.format("XYZ: %.1f / %.1f / %.1f  Facing: %s", player.x, player.y, player.z, player.direction.name)
-        val w = font.getStringWidth("outfit", text, 9f) + 12f
-        val x = 8f
-        val y = mc.window.guiScaledHeight - 22f
+        val g = event.guiGraphics
+        val font = mc.font
+        val facing = player.direction.name.lowercase().replaceFirstChar { it.uppercase() }
+        val coords = String.format("%.0f, %.0f, %.0f", player.x, player.y, player.z)
+        val y = mc.window.guiScaledHeight - 12
 
-        vector.drawRoundedRect(x, y, w, 14f, 3f, 0xAA13141B.toInt())
-        font.drawString("outfit", text, x + 6f, y + 2f, 9f, 0xFFCCCCCC.toInt())
+        var x = 6
+        g.drawString(font, "XYZ", x, y, UiStyle.ACCENT, true)
+        x += font.width("XYZ ")
+        g.drawString(font, coords, x, y, UiStyle.TEXT, true)
+        x += font.width(coords) + 6
+        g.drawString(font, facing, x, y, UiStyle.MUTED, true)
     }
 }

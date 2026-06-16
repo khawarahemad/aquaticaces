@@ -4,7 +4,6 @@ import com.aquaticaces.module.Category
 import com.aquaticaces.module.Module
 import com.aquaticaces.module.setting.BooleanSetting
 import com.aquaticaces.module.setting.NumberSetting
-import org.lwjgl.glfw.GLFW
 
 /**
  * Nametags module.

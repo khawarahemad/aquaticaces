@@ -1,162 +1,171 @@
 package com.aquaticaces.ui
 
+import com.mojang.realmsclient.RealmsMainScreen
+import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.SharedConstants
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
-import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen
-import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen
 import net.minecraft.client.gui.screens.options.OptionsScreen
 import net.minecraft.network.chat.Component
-import kotlin.math.roundToInt
+import com.aquaticaces.ui.components.VectorMenuButton
+import kotlin.math.sin
 
 /**
- * MainMenuScreen.
- * Sleek, futuristic main menu replacement utilizing custom Vector graphics
- * and responsive animations.
+ * Aquatic Aces main menu, styled to mirror the marketing website hero. The
+ * layout is computed to fit any GUI scale so buttons and footer never overlap.
  */
-class MainMenuScreen : Screen(Component.literal("MainMenu")) {
+class MainMenuScreen : Screen(Component.literal("Aquatic Aces")) {
 
-    private class MenuButton(val label: String, val onClick: () -> Unit) {
-        var hoverProgress = 0f
+    private val buttons = mutableListOf<VectorMenuButton>()
+    private var menuTick = 0f
+
+    private val primaryButtons = setOf("Singleplayer", "Multiplayer")
+
+    private var cardTopY = 0
+    private var cardBotY = 0
+    private var headerH = 112
+
+    private val modVersion: String by lazy {
+        FabricLoader.getInstance().getModContainer("aquaticaces")
+            .map { it.metadata.version.friendlyString }
+            .orElse("1.3.0")
     }
 
-    private val buttons = mutableListOf<MenuButton>()
-    private var fadeProgress = 0.0f
-
-    init {
-        buttons.add(MenuButton("Singleplayer") {
-            MinecraftClientHolder.mc.setScreen(SelectWorldScreen(this))
-        })
-        buttons.add(MenuButton("Multiplayer") {
-            MinecraftClientHolder.mc.setScreen(JoinMultiplayerScreen(this))
-        })
-        buttons.add(MenuButton("Options") {
-            MinecraftClientHolder.mc.setScreen(OptionsScreen(this, MinecraftClientHolder.mc.options))
-        })
-        buttons.add(MenuButton("Exit Game") {
-            MinecraftClientHolder.mc.close()
-        })
+    private val hasModMenu: Boolean by lazy {
+        FabricLoader.getInstance().isModLoaded("modmenu")
     }
 
     override fun init() {
-        super.init()
-        fadeProgress = 0f
+        buttons.clear()
+
+        val btnW = 224f
+        // rows: SP, MP, Realms, ClickGUI, [Mods], Options/Quit
+        val rowCount = if (hasModMenu) 6 else 5
+        val footerH = 22
+
+        // fit the layout to the available height
+        var btnH = 22f
+        var gap = 6f
+        val needed = headerH + rowCount * (btnH + gap) + footerH + 16
+        if (needed > height) {
+            val avail = (height - headerH - footerH - 16f).coerceAtLeast(120f)
+            val per = (avail / rowCount).coerceAtLeast(16f)
+            btnH = (per - 5f).coerceIn(14f, 22f)
+            gap = (per - btnH).coerceIn(3f, 6f)
+        }
+        val rowH = btnH + gap
+
+        val contentH = (headerH + rowCount * rowH).toInt()
+        val cardH = contentH + 14
+        cardTopY = ((height - cardH - footerH) / 2).coerceAtLeast(6)
+        cardBotY = cardTopY + cardH
+
+        val cx = width / 2f - btnW / 2f
+        var y = cardTopY + headerH.toFloat()
+
+        buttons.add(VectorMenuButton("Singleplayer", cx, y, btnW, btnH) {
+            minecraft?.setScreen(CustomSingleplayerScreen(this))
+        })
+        y += rowH
+
+        buttons.add(VectorMenuButton("Multiplayer", cx, y, btnW, btnH) {
+            minecraft?.setScreen(CustomMultiplayerScreen(this))
+        })
+        y += rowH
+
+        buttons.add(VectorMenuButton("Minecraft Realms", cx, y, btnW, btnH) {
+            minecraft?.setScreen(RealmsMainScreen(this))
+        })
+        y += rowH
+
+        buttons.add(VectorMenuButton("ClickGUI", cx, y, btnW, btnH) {
+            minecraft?.setScreen(ClickGUI())
+        })
+        y += rowH
+
+        if (hasModMenu) {
+            buttons.add(VectorMenuButton("Mods", cx, y, btnW, btnH) {
+                openModsScreen()
+            })
+            y += rowH
+        }
+
+        val halfW = (btnW - 6f) / 2f
+        buttons.add(VectorMenuButton("Options", cx, y, halfW, btnH) {
+            minecraft?.setScreen(OptionsScreen(this, minecraft!!.options))
+        })
+        buttons.add(VectorMenuButton("Quit", cx + btnW - halfW, y, halfW, btnH) {
+            minecraft?.stop()
+        })
     }
 
     override fun tick() {
-        fadeProgress = (fadeProgress + 0.05f).coerceAtMost(1.0f)
+        menuTick += 1f
     }
 
     override fun render(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val vectorRenderer = ClickGUI.vectorRenderer
-        val fontRenderer = ClickGUI.fontRenderer
+        val mc = minecraft ?: return
+        val font = mc.font
+        val t = menuTick + partialTick
 
-        val scale = minecraft!!.window.guiScale.toFloat()
-        val guiWidth = minecraft!!.window.guiScaledWidth.toFloat()
-        val guiHeight = minecraft!!.window.guiScaledHeight.toFloat()
+        UiStyle.backdrop(guiGraphics, width, height, t)
 
-        // Begin frame
-        vectorRenderer.begin(guiWidth, guiHeight, scale)
+        val cardW = 300
+        val cardX = width / 2 - cardW / 2
+        UiStyle.card(guiGraphics, cardX, cardTopY, cardX + cardW, cardBotY)
 
-        // 1. Draw premium deep indigo/violet gradient background
-        val leftColor = 0xFF080A14.toInt()
-        val rightColor = 0xFF140D26.toInt()
-        vectorRenderer.drawLinearGradientRect(
-            0f, 0f, guiWidth, guiHeight, 0f,
-            0f, 0f, guiWidth, guiHeight,
-            leftColor, rightColor
-        )
+        val centerX = width / 2
+        val markY = cardTopY + 14
+        UiStyle.logoMark(guiGraphics, centerX, markY, 32)
 
-        // 2. Draw animated Title Logo
-        val titleText = "AQUATIC ACES"
-        val titleSize = 38f
-        val titleW = fontRenderer.getStringWidth("outfit", titleText, titleSize)
-        val titleX = guiWidth / 2f - titleW / 2f
-        val titleY = guiHeight / 4f - 20f
+        val eyebrow = "FABRIC ${SharedConstants.getCurrentVersion().name} CLIENT"
+        guiGraphics.drawCenteredString(font, eyebrow, centerX, markY + 38, UiStyle.ACCENT)
 
-        // Subtle gradient shift glow on title
-        val time = System.currentTimeMillis()
-        val hue = ((time / 20) % 360) / 360f
-        val titleColor = java.awt.Color.getHSBColor(hue, 0.6f, 1.0f).rgb
+        UiStyle.title(guiGraphics, font, centerX, (markY + 48).toFloat(), 1.5f)
 
-        // Outline glow dropshadow
-        val shadowAlpha = (fadeProgress * 0x77).toInt()
-        vectorRenderer.drawDropShadow(titleX, titleY, titleW, titleSize, 12f, 24f, (shadowAlpha shl 24) or (titleColor and 0xFFFFFF))
-        
-        fontRenderer.drawString(
-            "outfit",
-            titleText,
-            titleX,
-            titleY,
-            titleSize,
-            (0xFF shl 24) or (titleColor and 0xFFFFFF)
-        )
+        guiGraphics.drawCenteredString(font, "Precision combat. Buttery movement.", centerX, markY + 68, UiStyle.MUTED)
 
-        // 3. Render buttons list
-        val btnW = 160f
-        val btnH = 26f
-        val startY = guiHeight / 2f - 40f
-        val btnX = guiWidth / 2f - btnW / 2f
+        // live badge
+        val badge = "60+ MODULES  ·  v$modVersion"
+        val bw = font.width(badge) + 22
+        val bx = centerX - bw / 2
+        val by = markY + 82
+        guiGraphics.fill(bx, by, bx + bw, by + 14, 0x1500FF88)
+        UiStyle.outline(guiGraphics, bx, by, bx + bw, by + 14, 0x4400FF88)
+        val pulse = (0.5f + 0.5f * sin(t * 0.12f))
+        val dotAlpha = (0x66 + pulse * 0x99).toInt() shl 24
+        guiGraphics.fill(bx + 7, by + 5, bx + 11, by + 9, dotAlpha or (UiStyle.SUCCESS and 0xFFFFFF))
+        guiGraphics.drawString(font, badge, bx + 15, by + 3, UiStyle.SUCCESS, false)
 
-        buttons.forEachIndexed { index, button ->
-            val y = startY + index * (btnH + 10f)
-
-            // Update button hover state animations
-            val isHovered = mouseX >= btnX && mouseX <= btnX + btnW && mouseY >= y && mouseY <= y + btnH
-            val targetHover = if (isHovered) 1.0f else 0.0f
-            button.hoverProgress += (targetHover - button.hoverProgress) * 0.2f
-
-            // Compute background and border transition layouts
-            val hoverFactor = button.hoverProgress
-            val bgAlpha = ((0x2A + (0x1F * hoverFactor)).toInt() * fadeProgress).toInt()
-            val buttonBg = (bgAlpha shl 24) or 0x131521
-
-            val borderAlpha = ((0x3C + (0x7F * hoverFactor)).toInt() * fadeProgress).toInt()
-            val buttonBorder = (borderAlpha shl 24) or 0x00C6FF
-
-            // Draw vector card
-            vectorRenderer.drawRoundedRect(btnX, y, btnW, btnH, 4f, buttonBg)
-            vectorRenderer.drawMultiPassOutline(btnX, y, btnW, btnH, 4f, 1.0f, buttonBorder, (0x10 shl 24) or 0x00C6FF)
-
-            // Draw label centering text
-            val textW = fontRenderer.getStringWidth("outfit", button.label, 12f)
-            val labelColor = ((0xBB + (0x44 * hoverFactor)).toInt() shl 24) or 0xFFFFFF
-            fontRenderer.drawString(
-                "outfit",
-                button.label,
-                btnX + btnW / 2f - textW / 2f,
-                y + btnH / 2f - 6f,
-                12f,
-                labelColor
-            )
+        for (button in buttons) {
+            button.tickHovered(button.contains(mouseX.toDouble(), mouseY.toDouble()))
+            UiStyle.button(guiGraphics, font, button, primaryButtons.contains(button.label))
         }
 
-        vectorRenderer.end()
+        val footerY = (cardBotY + 9).coerceAtMost(height - 11)
+        guiGraphics.drawCenteredString(font, "discord.gg/GMDf9vWeuQ", centerX, footerY, UiStyle.DIM)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val guiWidth = minecraft!!.window.guiScaledWidth.toFloat()
-        val guiHeight = minecraft!!.window.guiScaledHeight.toFloat()
-        
-        val btnW = 160f
-        val btnH = 26f
-        val startY = guiHeight / 2f - 40f
-        val btnX = guiWidth / 2f - btnW / 2f
-
-        buttons.forEachIndexed { index, item ->
-            val y = startY + index * (btnH + 10f)
-            if (mouseX >= btnX && mouseX <= btnX + btnW && mouseY >= y && mouseY <= y + btnH) {
-                item.onClick()
-                return true
+        if (button == 0) {
+            for (item in buttons) {
+                if (item.contains(mouseX, mouseY)) {
+                    item.click()
+                    return true
+                }
             }
         }
-
         return super.mouseClicked(mouseX, mouseY, button)
     }
 
     override fun shouldCloseOnEsc(): Boolean = false
-}
 
-// Global class helper to safely retrieve Minecraft client across compilations
-object MinecraftClientHolder {
-    val mc: net.minecraft.client.Minecraft get() = net.minecraft.client.Minecraft.getInstance()
+    private fun openModsScreen() {
+        try {
+            val screenClass = Class.forName("com.terraformersmc.modmenu.gui.ModsScreen")
+            val screen = screenClass.getConstructor(Screen::class.java).newInstance(this) as Screen
+            minecraft?.setScreen(screen)
+        } catch (_: Exception) {
+        }
+    }
 }

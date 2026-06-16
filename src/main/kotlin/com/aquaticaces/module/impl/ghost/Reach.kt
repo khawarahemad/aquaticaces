@@ -3,7 +3,7 @@ package com.aquaticaces.module.impl.ghost
 import com.aquaticaces.event.Subscribe
 import com.aquaticaces.event.impl.EventClientTick
 import com.aquaticaces.event.impl.EventPacketSend
-import com.aquaticaces.mixin.ServerboundInteractPacketAccess
+import com.aquaticaces.accessor.ServerboundInteractPacketAccess
 import com.aquaticaces.module.Category
 import com.aquaticaces.module.Module
 import com.aquaticaces.module.setting.NumberSetting
