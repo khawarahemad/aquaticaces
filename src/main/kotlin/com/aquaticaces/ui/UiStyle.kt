@@ -68,9 +68,6 @@ object UiStyle {
     }
 
     fun logoMark(g: GuiGraphics, centerX: Int, y: Int, size: Int) {
-        val mx = centerX - size / 2
-        g.fillGradient(mx, y, mx + size, y + size, ACCENT, ACCENT_2)
-        g.fill(mx, y, mx + size, y + 1, 0x55FFFFFF)
         BrandedUi.drawLogo(g, centerX, y, size)
     }
 

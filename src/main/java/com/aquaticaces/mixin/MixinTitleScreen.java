@@ -18,6 +18,6 @@ public class MixinTitleScreen {
     private void onInitReturn(CallbackInfo ci) {
         if (com.aquaticaces.module.impl.ghost.SelfDestruct.destructed) return;
 
-        Minecraft.getInstance().setScreen(new com.aquaticaces.ui.MainMenuScreen());
+        Minecraft.getInstance().setScreen(new com.aquaticaces.ui.BrandedSplashScreen());
     }
 }
