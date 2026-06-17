@@ -9,7 +9,7 @@ import com.aquaticaces.module.setting.ModeSetting
 import com.aquaticaces.module.setting.NumberSetting
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.LivingEntity
-import net.minecraft.network.protocol.game.ServerboundInteractPacket
+import net.minecraft.world.entity.player.Player
 import org.lwjgl.glfw.GLFW
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.*
@@ -21,6 +21,7 @@ import kotlin.math.*
 class KillAura : Module("KillAura", "Automatically attacks nearby entities.", Category.COMBAT, GLFW.GLFW_KEY_R) {
 
     val targetMode = ModeSetting("Mode", "Single", listOf("Single", "Switch", "Multi"))
+    val targets = ModeSetting("Targets", "Players", listOf("Players", "Mobs", "All"))
     val range = NumberSetting("Range", 3.8, 1.0, 6.0, 0.1)
     val minCPS = NumberSetting("MinCPS", 10.0, 1.0, 20.0, 1.0)
     val maxCPS = NumberSetting("MaxCPS", 14.0, 1.0, 20.0, 1.0)
@@ -37,7 +38,7 @@ class KillAura : Module("KillAura", "Automatically attacks nearby entities.", Ca
     private var nextAttackDelay = 0L
 
     init {
-        addSettings(targetMode, range, minCPS, maxCPS, rotationSmoothness, raytrace, switchDelay)
+        addSettings(targetMode, targets, range, minCPS, maxCPS, rotationSmoothness, raytrace, switchDelay)
         switchDelay.dependsOn(targetMode, "Switch")
     }
 
@@ -52,7 +53,7 @@ class KillAura : Module("KillAura", "Automatically attacks nearby entities.", Ca
         val entities = level.entitiesForRendering()
         for (entity in entities) {
             if (entity !is LivingEntity || !entity.isAlive) continue
-            if (!com.aquaticaces.core.TargetValidator.isValidCombatTarget(entity)) continue
+            if (!isValidTarget(entity)) continue
             val distCheck = combatDistance(player, entity)
             if (distCheck <= range.value) targetsList.add(entity)
         }
@@ -132,8 +133,7 @@ class KillAura : Module("KillAura", "Automatically attacks nearby entities.", Ca
         // 6. Attack Delay and Packet Action
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastAttackTime >= nextAttackDelay) {
-            val interactPacket = ServerboundInteractPacket.createAttackPacket(activeTarget, player.isShiftKeyDown)
-            player.connection.send(interactPacket)
+            mc.gameMode?.attack(player, activeTarget)
             if (!NoSwing.shouldHideSwing()) player.swing(InteractionHand.MAIN_HAND)
 
             val min = minCPS.value.coerceAtMost(maxCPS.value)
@@ -144,7 +144,15 @@ class KillAura : Module("KillAura", "Automatically attacks nearby entities.", Ca
         }
     }
 
-    private fun combatDistance(player: net.minecraft.world.entity.player.Player, entity: LivingEntity): Double {
+    private fun isValidTarget(entity: LivingEntity): Boolean {
+        return when (targets.value) {
+            "Players" -> com.aquaticaces.core.TargetValidator.isValidCombatTarget(entity, playersOnly = true)
+            "Mobs" -> entity !is Player && com.aquaticaces.core.TargetValidator.isValidCombatTarget(entity, playersOnly = false)
+            else -> com.aquaticaces.core.TargetValidator.isValidCombatTarget(entity, playersOnly = false)
+        }
+    }
+
+    private fun combatDistance(player: Player, entity: LivingEntity): Double {
         val delayed = Backtrack.delayedPosition(entity)
         if (delayed != null) {
             val dx = delayed.x - player.x
