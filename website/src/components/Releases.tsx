@@ -210,9 +210,27 @@ function ReleaseSidebarItem({ release }: { release: GitHubRelease }) {
   )
 }
 
+const SIDEBAR_PREVIEW_COUNT = 4
+
 export function Releases() {
   const { releases, latest, loading, error } = useGitHubReleases()
   const olderReleases = latest ? releases.filter((release) => release.id !== latest.id) : releases
+
+  const [query, setQuery] = useState('')
+  const [showAll, setShowAll] = useState(false)
+
+  const normalizedQuery = query.trim().toLowerCase()
+  const filteredOlder = normalizedQuery
+    ? olderReleases.filter((release) => {
+        const haystack = `${release.tag_name} ${release.name ?? ''}`.toLowerCase()
+        return haystack.includes(normalizedQuery)
+      })
+    : olderReleases
+
+  const isSearching = normalizedQuery.length > 0
+  const visibleOlder =
+    showAll || isSearching ? filteredOlder : filteredOlder.slice(0, SIDEBAR_PREVIEW_COUNT)
+  const hiddenCount = filteredOlder.length - visibleOlder.length
 
   return (
     <section id="releases" className="page-section releases-section">
@@ -307,11 +325,61 @@ export function Releases() {
                     <span className="releases-sidebar-label">Older versions</span>
                     <span className="releases-sidebar-count">{olderReleases.length}</span>
                   </div>
+
+                  {olderReleases.length > SIDEBAR_PREVIEW_COUNT && (
+                    <div className="releases-sidebar-search">
+                      <svg viewBox="0 0 24 24" aria-hidden className="releases-sidebar-search-icon">
+                        <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.6" fill="none" />
+                        <path d="M20 20l-3.2-3.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                      </svg>
+                      <input
+                        type="search"
+                        value={query}
+                        onChange={(event) => setQuery(event.target.value)}
+                        placeholder="Search version (e.g. 1.3.0)"
+                        aria-label="Search older releases"
+                      />
+                      {query && (
+                        <button
+                          type="button"
+                          className="releases-sidebar-search-clear"
+                          onClick={() => setQuery('')}
+                          aria-label="Clear search"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  )}
+
                   <div className="releases-sidebar-list">
-                    {olderReleases.map((release) => (
+                    {visibleOlder.map((release) => (
                       <ReleaseSidebarItem key={release.id} release={release} />
                     ))}
+                    {visibleOlder.length === 0 && (
+                      <p className="releases-sidebar-empty">No versions match “{query}”.</p>
+                    )}
                   </div>
+
+                  {!isSearching && hiddenCount > 0 && (
+                    <button
+                      type="button"
+                      className="releases-sidebar-more"
+                      onClick={() => setShowAll(true)}
+                    >
+                      Show {hiddenCount} more {hiddenCount === 1 ? 'version' : 'versions'}
+                    </button>
+                  )}
+                  {!isSearching && showAll && olderReleases.length > SIDEBAR_PREVIEW_COUNT && (
+                    <button
+                      type="button"
+                      className="releases-sidebar-more"
+                      onClick={() => setShowAll(false)}
+                    >
+                      Show less
+                    </button>
+                  )}
+
                   <a
                     href={`${MOD.repoUrl}/releases`}
                     className="releases-sidebar-all"
